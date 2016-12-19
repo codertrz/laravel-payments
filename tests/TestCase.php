@@ -4,6 +4,8 @@ use Beansme\Payments\Providers\PaymentServiceProvider;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase {
 
+    protected $baseUrl = 'http://payments.dev';
+
     protected function getPackageProviders($app)
     {
         return [PaymentServiceProvider::class];

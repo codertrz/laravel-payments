@@ -4,7 +4,10 @@ class ExampleTest extends TestCase {
     /** @test */
     public function example()
     {
-        $this->assertEquals(1, 1);
+        $this->json('post', 'api/gateway/payments/pingxx/paid');
+        
+        $this->assertResponseStatus(403);
     }
+
 
 }
