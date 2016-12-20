@@ -1,15 +1,26 @@
 <?php namespace Beansme\Payments\Test;
 
 use Beansme\Payments\Providers\PaymentServiceProvider;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase {
 
+    use DatabaseMigrations;
+
     protected $baseUrl = 'http://payments.dev';
+
+    public function setUp()
+    {
+        parent::setUp();
+        $this->loadMigrationsFrom(__DIR__ . '/../migrations');
+    }
 
     protected function getPackageProviders($app)
     {
         return [PaymentServiceProvider::class];
     }
+
 
     /**
      * Define environment setup.
@@ -20,12 +31,13 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase {
     protected function getEnvironmentSetUp($app)
     {
         // Setup default database to use sqlite :memory:
-        $app['config']->set('database.default', 'test_payments');
-        $app['config']->set('database.connections.test_payments', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
+        $app['config']->set('database.default', 'testing');
+
+        //test by mysql
+//        $app['config']->set('database.default', 'mysql');
+//        $app['config']->set('database.connections.mysql.database', 'payment_testing');
+//        $app['config']->set('database.connections.mysql.username', 'root');
+//        $app['config']->set('database.connections.mysql.password', '');
     }
 
     protected function dumpResponse()
