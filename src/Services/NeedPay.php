@@ -1,6 +1,6 @@
-<?php
+<?php namespace Beansme\Payments\Services;
 
-trait NeedPayment {
+trait NeedPay {
 
     /**
      * payment info
@@ -12,7 +12,7 @@ trait NeedPayment {
     /**
      * relations
      */
-    public function payment()
+    public function receipt()
     {
 
     }
