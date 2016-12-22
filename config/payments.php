@@ -25,4 +25,13 @@ return [
         'pub_key_contents' => ''
     ],
 
+    /**
+     * 支付渠道
+     */
+    'gateway' => [
+        'pingxx' => [
+
+        ]
+    ]
+
 ];

@@ -1,5 +1,7 @@
 <?php namespace Beansme\Payments\Models;
 
+use Beansme\Payments\Events\Receipts\ReceiptPaid;
+use Beansme\Payments\Protocol;
 use Illuminate\Database\Eloquent\Model;
 
 class Receipt extends Model {
@@ -30,4 +32,39 @@ class Receipt extends Model {
     }
 
 
+    /**
+     * 判断
+     */
+
+    public function isPaid()
+    {
+        return $this->getAttributeValue('pay_status') == Protocol::STATUS_PAY_PAID;
+    }
+
+    public function hasRefund()
+    {
+        return $this->getAttributeValue('refund_status') != Protocol::STATUS_REFUND_NONE;
+    }
+
+    //操作
+    public function setAsPaid(Payment $payment)
+    {
+        if (!$payment->isPaid()) {
+            throw new \Exception('payment not paid : ' . $payment->toJson(), 400);
+        }
+
+        if (!$this->isPaid()) {
+            $this->setAttribute('gateway', $payment->getAttributeValue('gateway'));
+            $this->setAttribute('app', $payment->getAttributeValue('app'));
+            $this->setAttribute('channel', $payment->getAttributeValue('channel'));
+            $this->setAttribute('payment_id', $payment->getAttributeValue('id'));
+            $this->setAttribute('transaction_no', $payment->getAttributeValue('transaction_no'));
+            $this->setAttribute('currency', $payment->getAttributeValue('currency'));
+            $this->setAttribute('time_paid', $payment->getAttributeValue('time_paid'));
+            $this->setAttribute('pay_status', Protocol::STATUS_PAY_PAID);
+            $this->save();
+        }
+
+        event(new ReceiptPaid($this));
+    }
 }

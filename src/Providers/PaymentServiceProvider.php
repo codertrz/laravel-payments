@@ -25,6 +25,7 @@ class PaymentServiceProvider extends ServiceProvider {
      * @var array
      */
     protected $providers = [
+        EventServiceProvider::class,
         \Hafael\LaraFlake\LaraFlakeServiceProvider::class
     ];
 
