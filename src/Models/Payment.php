@@ -1,13 +1,14 @@
 <?php namespace Beansme\Payments\Models;
 
 use Beansme\Payments\Events\Payments\PaymentPaid;
+use Beansme\Payments\Services\Contracts\CanRefund;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model {
 
-    use SoftDeletes;
+    use SoftDeletes, CanRefund;
 
     public $incrementing = false;
 

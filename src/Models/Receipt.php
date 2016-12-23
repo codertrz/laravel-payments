@@ -2,9 +2,13 @@
 
 use Beansme\Payments\Events\Receipts\ReceiptPaid;
 use Beansme\Payments\Protocol;
+use Beansme\Payments\Services\Contracts\NeedPay;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Receipt extends Model {
+
+    use SoftDeletes;
 
     public $incrementing = false;
 
@@ -31,6 +35,15 @@ class Receipt extends Model {
         return $this->hasMany(Payment::class, 'receipt_id', 'id');
     }
 
+    public function getPayment()
+    {
+        return $this->getAttributeValue('payment_id');
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttributeValue('amount');
+    }
 
     /**
      * 判断
@@ -67,4 +80,6 @@ class Receipt extends Model {
 
         event(new ReceiptPaid($this));
     }
+
+
 }

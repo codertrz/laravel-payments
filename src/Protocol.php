@@ -12,5 +12,16 @@ class Protocol {
     const STATUS_REFUND_REFUNDING = 'refunding';
     const STATUS_REFUND_REFUNDED = 'refunded';
 
+    //currency
+    const CURRENCY_OF_CNY = 'cny';
+
+    //gateway
+    const PAY_GATEWAY_OF_PINGXX = 'pingxx';
+
+    public static function display_price($price)
+    {
+        return bcdiv($price, 100, 2);
+    }
+
 
 }

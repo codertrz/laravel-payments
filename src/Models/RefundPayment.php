@@ -23,5 +23,10 @@ class RefundPayment extends Model {
     }
 
     //operation
+    public function setAsSucceed($transaction_no, $time_succeed = null)
+    {
+        
+    }
+
 
 }
