@@ -1,9 +1,18 @@
 <?php namespace Beansme\Payments\Services\Receipts;
 
-use Beansme\Payments\Models\Payment;
+use Beansme\Payments\Models\Pingxx\Charge;
 
 interface ReceiptServiceContract {
 
+    /**
+     * @param $user_id
+     * @param $order_no
+     * @param $amount
+     * @param $subject
+     * @param $body
+     * @param null $channel
+     * @return Charge|mixed
+     */
     public function purchase($user_id, $order_no, $amount, $subject, $body, $channel = null);
 
     /**
@@ -11,13 +20,6 @@ interface ReceiptServiceContract {
      * @return bool
      */
     public function isPaid($receipt_id);
-
-    /**
-     * @param $receipt_id
-     * @param Payment $payment
-     * @return mixed
-     */
-    public function finishPurchase($receipt_id, Payment $payment);
 
     /**
      * @param $receipt_id

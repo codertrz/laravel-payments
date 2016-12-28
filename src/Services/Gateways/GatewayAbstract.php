@@ -10,7 +10,9 @@ abstract class GatewayAbstract {
     /**
      * Init
      */
-
+    /**
+     * @var array $config
+     */
     protected static $config;
 
     public function __construct()
@@ -61,14 +63,13 @@ abstract class GatewayAbstract {
     /**
      * @return RefundPayment
      */
-    public abstract function persistRefund();
+    public abstract function persistRefund($refund_charge);
 
 
     public abstract function refund(CanRefund $payment, $desc, $amount = null);
 
-    public abstract function fetchRefundTransaction(CanRefund $payment);
+    public abstract function fetchRefundTransaction(CanRefund $payment, $local = false, $refund_id = null);
 
     public abstract function finishRefund($refund_charge);
-
 
 }

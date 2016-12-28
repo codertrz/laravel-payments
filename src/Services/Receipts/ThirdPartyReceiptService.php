@@ -14,4 +14,5 @@ class ThirdPartyReceiptService extends ReceiptServiceAbstract {
     {
         return Payment::class;
     }
+
 }

@@ -1,5 +1,8 @@
 <?php namespace Beansme\Payments\Models;
 
+use Beansme\Payments\Events\Payments\PaymentRefundSucceed;
+use Beansme\Payments\Events\Payments\PaymentRefundFailed;
+use Beansme\Payments\Protocol;
 use Illuminate\Database\Eloquent\Model;
 
 class RefundPayment extends Model {
@@ -22,11 +25,36 @@ class RefundPayment extends Model {
         return $this->belongsTo(Payment::class, 'payment_id', 'id');
     }
 
+    public function isSucceed()
+    {
+        return $this->getAttributeValue('succeed') ?: false;
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttributeValue('amount');
+    }
+
     //operation
     public function setAsSucceed($transaction_no, $time_succeed = null)
     {
-        
+        if (!$this->isSucceed()) {
+            $this->setAttribute('transaction_no', $transaction_no);
+            $this->setAttribute('time_succeed', $time_succeed);
+            $this->setAttribute('status', Protocol::STATUS_REFUND_REFUNDED);
+            $this->save();
+        }
+        event(new PaymentRefundSucceed($this));
     }
 
+    public function setAsFail($failure_code, $failure_msg)
+    {
+        $this->setAttribute('failure_code', $failure_code);
+        $this->setAttribute('failure_msg', $failure_msg);
+        $this->setAttribute('status', Protocol::STATUS_REFUND_FAIL);
+        $this->save();
+
+        event(new PaymentRefundFailed($this));
+    }
 
 }

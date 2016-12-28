@@ -1,5 +1,6 @@
 <?php namespace Beansme\Payments\Events\Payments;
 
+use Beansme\Payments\Models\RefundPayment;
 use Illuminate\Queue\SerializesModels;
 
 class PaymentRefundFailed {
@@ -7,17 +8,17 @@ class PaymentRefundFailed {
     use SerializesModels;
 
     /**
-     * @var PaymentRefunded
+     * @var PaymentRefundSucceed
      */
-    public $paymentRefunded;
+    public $refund_payment;
 
     /**
      * PaymentRefundFailed constructor.
-     * @param PaymentRefunded $paymentRefunded
+     * @param RefundPayment $payment_refunded
      */
-    public function __construct(PaymentRefunded $paymentRefunded)
+    public function __construct(RefundPayment $payment_refunded)
     {
-        $this->paymentRefunded = $paymentRefunded;
+        $this->refund_payment = $payment_refunded;
     }
 
 

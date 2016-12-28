@@ -1,7 +1,9 @@
 <?php namespace Beansme\Payments\Services\Gateways;
 
+use Beansme\Payments\Events\Payments\PaymentRefundApply;
 use Beansme\Payments\Models\Payment;
 use Beansme\Payments\Models\Receipt;
+use Beansme\Payments\Models\RefundPayment;
 use Beansme\Payments\Protocol;
 use Beansme\Payments\Services\Contracts\CanRefund;
 use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
@@ -289,22 +291,37 @@ class PingxxGateway extends ThirdPartyGatewayContract {
      */
     public function refund(CanRefund $payment, $desc, $amount = null)
     {
-        $charge = $this->fetchTransaction($payment->getRefundNo());
-        return $charge->refunds->create([
+        $charge = $this->fetchTransaction($payment->getRefundNo(), $local = false);
+
+        $refund_charge = $charge->refunds->create([
             'amount' => $amount ?: $payment->getRefundAmount(),
             'description' => $desc,
         ]);
+
+        $refund_payment = $this->persistRefund($refund_charge);
+
+        event(new PaymentRefundApply($refund_payment));
+
+        return $refund_charge;
     }
 
 
     /**
      * @param CanRefund $payment
+     * @param bool $local
      * @param null $refund_id
-     * @return Refund
+     * @return Refund|Model
      */
-    public function fetchRefundTransaction(CanRefund $payment, $refund_id = null)
+    public function fetchRefundTransaction(CanRefund $payment, $local = false, $refund_id = null)
     {
-        $charge = $this->fetchTransaction($payment->getRefundNo());
+        if ($local) {
+            if ($refund_id) {
+                return $this->getRefundPayment($refund_id);
+            }
+            return $payment->getRefunds();
+        }
+
+        $charge = $this->fetchTransaction($payment->getRefundNo(), false);
         if (!is_null($refund_id)) {
             if ($refund_id instanceof Refund) {
                 return $refund_id;
@@ -316,14 +333,48 @@ class PingxxGateway extends ThirdPartyGatewayContract {
     }
 
 
-    public function persistRefund()
+    public function persistRefund($refund_charge)
     {
-        // TODO: Implement persistRefund() method.
+        return RefundPayment::query()->updateOrCreate(
+            ['id' => $refund_charge['id']],
+            [
+                'id' => $refund_charge['id'],
+                'refund_order_no' => $refund_charge['order_no'],
+                'payment_order_no' => $refund_charge['charge_order_no'],
+                'transaction_no' => $refund_charge['transaction_no'],
+                'payment_id' => $refund_charge['charge'],
+                'amount' => $refund_charge['amount'],
+                'time_succeed' => $refund_charge['time_succeed'],
+                'succeed' => $refund_charge['succeed'],
+                'status' => $refund_charge['status'],
+                'failure_code' => $refund_charge['failure_code'],
+                'failure_msg' => $refund_charge['failure_msg'],
+                'description' => $refund_charge['description'],
+            ]
+        );
     }
 
     public function finishRefund($refund_charge)
     {
+        $refund_payment = $this->getRefundPayment($refund_charge['id']);
 
+        if ($refund_charge['succeed']) {
+            $refund_payment->setAsSucceed($refund_charge['transaction_no'], $refund_charge['time_succeed']);
+            return $refund_payment;
+        } else if ($refund_charge['failure_code']) {
+            $refund_payment->setAsFail($refund_charge['failure_code'], $refund_charge['failure_msg']);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $refund_id
+     * @return RefundPayment|Model
+     */
+    protected function getRefundPayment($refund_id)
+    {
+        return RefundPayment::query()->findOrFail($refund_id);
     }
 
 

@@ -4,6 +4,7 @@ use Beansme\Payments\Models\Payment;
 use Beansme\Payments\Models\Pingxx\Charge;
 use Beansme\Payments\Models\Receipt;
 use Beansme\Payments\Protocol;
+use Beansme\Payments\Services\Gateways\Exceptions\CanNotRefundException;
 use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
 use Beansme\Payments\Services\Gateways\GatewayAbstract;
 use Illuminate\Database\Eloquent\Model;
@@ -84,39 +85,34 @@ abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
         return $this->gateway->purchase($receipt, $channel);
     }
 
-    public function finishPurchase($receipt_id, Payment $payment)
-    {
-        if (!$payment->isPaid()) {
-            throw new ChargeNotPayException();
-        }
-
-        $receipt = $this->fetchReceipt($receipt_id, $by_order = false);
-        $receipt->setAsPaid($payment);
-
-        return $receipt;
-    }
-
     public function isPaid($receipt)
     {
         $receipt = $this->fetchReceipt($receipt, $by_order = false);
         return $receipt->isPaid() ?: function () use ($receipt) {
             $payment = $this->gateway->receiptIsPaid($receipt->getKey());
             if (!is_null($payment) && $payment instanceof Payment) {
-                $this->finishPurchase($receipt, $payment);
+                $receipt->setAsPaid($payment);
             }
             return $payment ? true : false;
         };
     }
 
+    /**
+     * @param $receipt
+     * @param int $amount
+     * @param string $desc
+     * @return mixed
+     * @throws CanNotRefundException
+     */
     public function refund($receipt, $amount, $desc)
     {
         $receipt = $this->fetchReceipt($receipt, $by_order = false);
 
         if (!$receipt->canRefund()) {
-            return false;
+            throw new CanNotRefundException();
         }
 
-        $refund_charge = $this->gateway->refund($receipt, $desc, $amount);
+        $refund_charge = $this->gateway->refund($receipt->payment, $desc, $amount);
 
         return $refund_charge;
     }

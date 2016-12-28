@@ -16,7 +16,8 @@ class CreatePaymentsRefundTable extends Migration {
 
             //流水号
             $table->string('id')->primary();
-            $table->bigInteger('order_no'); // generate by pingxx
+            $table->unsignedBigInteger('payment_order_no');
+            $table->string('refund_order_no'); // generate by pingxx
             $table->string('transaction_no');
             $table->string('payment_id');
 

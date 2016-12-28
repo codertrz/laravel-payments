@@ -13,8 +13,10 @@ class Protocol {
     //退款状态
     const STATUS_REFUND_NONE = 'none';
     const STATUS_REFUND_APPLY = 'apply';
-    const STATUS_REFUND_REFUNDING = 'refunding';
-    const STATUS_REFUND_REFUNDED = 'refunded';
+    const STATUS_REFUND_REFUNDING = 'pending';
+    const STATUS_REFUND_REFUNDED = 'succeeded';
+    const STATUS_REFUND_FAIL = 'fail';
+
 
     //currency
     const CURRENCY_OF_CNY = 'cny';

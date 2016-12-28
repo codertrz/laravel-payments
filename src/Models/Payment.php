@@ -29,11 +29,6 @@ class Payment extends Model {
         'credential' => 'array'
     ];
 
-    public function refunds()
-    {
-        return $this->hasMany(RefundPayment::class, 'payment_id', 'id');
-    }
-
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -59,18 +54,10 @@ class Payment extends Model {
         event(new PaymentPaid($this));
     }
 
-    public function getAmountRefundableAttribute()
-    {
-        return intval($this->attributes['amount'] - $this->attributes['amount_refunded']);
-    }
 
-    public function setPreRefund($amount)
+    public function getRefundNo()
     {
-        $this->setAttribute('amount_refunded', $this->getAttributeValue('amount_refunded') + $amount);
-        $this->setAttribute('refunded', true);
-        $this->save();
-
-        return $this;
+        return $this->getKey();
     }
 
 }

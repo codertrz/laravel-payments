@@ -90,6 +90,10 @@ class Receipt extends Model {
         return $this->getAttributeValue('pay_status') == Protocol::STATUS_PAY_PAID;
     }
 
+    /**
+     * 是否可以发起退款
+     * @return bool
+     */
     public function canRefund()
     {
         return $this->getAttributeValue('amount_refunded') < $this->getAttributeValue('amount');
@@ -119,4 +123,11 @@ class Receipt extends Model {
     }
 
 
+    /**
+     *
+     */
+    public function getRefundNo()
+    {
+        return $this->getPaymentId();
+    }
 }
