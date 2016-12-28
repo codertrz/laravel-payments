@@ -2,13 +2,17 @@
 
 use Beansme\Payments\Events\Receipts\ReceiptPaid;
 use Beansme\Payments\Protocol;
+use Beansme\Payments\Services\Contracts\CanRefund;
 use Beansme\Payments\Services\Contracts\NeedPay;
+use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
+use Beansme\Payments\Services\HelperAbstract;
+use Hafael\LaraFlake\Traits\LaraFlakeTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Receipt extends Model {
 
-    use SoftDeletes;
+    use SoftDeletes, LaraFlakeTrait, CanRefund;
 
     public $incrementing = false;
 
@@ -35,7 +39,7 @@ class Receipt extends Model {
         return $this->hasMany(Payment::class, 'receipt_id', 'id');
     }
 
-    public function getPayment()
+    public function getPaymentId()
     {
         return $this->getAttributeValue('payment_id');
     }
@@ -43,6 +47,38 @@ class Receipt extends Model {
     public function getAmount()
     {
         return $this->getAttributeValue('amount');
+    }
+
+    public function getOrderNo()
+    {
+        return $this->getAttributeValue('order_no');
+    }
+
+    public function getPaymentSubject()
+    {
+        return $this->getOrderNo();
+    }
+
+    public function getPaymentBody()
+    {
+        return $this->getOrderNo();
+    }
+
+    public function getPayerID($type = Protocol::PAYER_ID_USER_ID)
+    {
+        $user_id = $this->getAttributeValue('user_id');
+        if ($type == Protocol::PAYER_ID_OPEN_ID) {
+            return app()->make(HelperAbstract::class)->getUserOpenId($user_id);
+        }
+
+        return $user_id;
+    }
+
+
+    public function setAmountAttribute($amount)
+    {
+        $this->setAttribute('amount', $amount);
+        $this->setAttribute('refundable_amount', $amount);
     }
 
     /**
@@ -54,6 +90,11 @@ class Receipt extends Model {
         return $this->getAttributeValue('pay_status') == Protocol::STATUS_PAY_PAID;
     }
 
+    public function canRefund()
+    {
+        return $this->getAttributeValue('amount_refunded') < $this->getAttributeValue('amount');
+    }
+
     public function hasRefund()
     {
         return $this->getAttributeValue('refund_status') != Protocol::STATUS_REFUND_NONE;
@@ -62,10 +103,6 @@ class Receipt extends Model {
     //操作
     public function setAsPaid(Payment $payment)
     {
-        if (!$payment->isPaid()) {
-            throw new \Exception('payment not paid : ' . $payment->toJson(), 400);
-        }
-
         if (!$this->isPaid()) {
             $this->setAttribute('gateway', $payment->getAttributeValue('gateway'));
             $this->setAttribute('app', $payment->getAttributeValue('app'));

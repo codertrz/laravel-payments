@@ -4,9 +4,12 @@ use Beansme\Payments\Models\Payment;
 use Beansme\Payments\Models\Receipt;
 use Beansme\Payments\Models\RefundPayment;
 use Beansme\Payments\Services\Contracts\CanRefund;
-use Beansme\Payments\Services\Contracts\NeedPay;
 
 abstract class GatewayAbstract {
+
+    /**
+     * Init
+     */
 
     protected static $config;
 
@@ -17,7 +20,16 @@ abstract class GatewayAbstract {
 
     public abstract function configName();
 
-    public abstract function purchase(NeedPay $order);
+    /**
+     * Purchase
+     */
+
+    /**
+     * @param Receipt $receipt
+     * @param null $channel
+     * @return mixed
+     */
+    public abstract function purchase(Receipt $receipt, $channel = null);
 
     /**
      * @param $charge
@@ -26,19 +38,37 @@ abstract class GatewayAbstract {
      */
     public abstract function persistTransaction($charge, Receipt $receipt);
 
-    public abstract function fetchTransaction($payment_id);
+    public abstract function fetchTransaction($payment_id, $local = true);
 
-    public abstract function fetchTransactionLists($parameters);
+    public abstract function fetchTransactionLists($parameters, $local = false);
 
-    public abstract function fetchRefund(CanRefund $payment);
+    public abstract function isPaid($charge);
 
+    public abstract function finishPurchase($charge);
+
+    public abstract function transactionIsPaid($payment_id);
+
+    public abstract function receiptIsPaid($receipt_id);
+
+    /**
+     * Transfer
+     */
+    public abstract function transfer();
+
+    /**
+     * Refund
+     */
     /**
      * @return RefundPayment
      */
     public abstract function persistRefund();
 
-    public abstract function transfer();
 
     public abstract function refund(CanRefund $payment, $desc, $amount = null);
+
+    public abstract function fetchRefundTransaction(CanRefund $payment);
+
+    public abstract function finishRefund($refund_charge);
+
 
 }

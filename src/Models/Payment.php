@@ -59,4 +59,18 @@ class Payment extends Model {
         event(new PaymentPaid($this));
     }
 
+    public function getAmountRefundableAttribute()
+    {
+        return intval($this->attributes['amount'] - $this->attributes['amount_refunded']);
+    }
+
+    public function setPreRefund($amount)
+    {
+        $this->setAttribute('amount_refunded', $this->getAttributeValue('amount_refunded') + $amount);
+        $this->setAttribute('refunded', true);
+        $this->save();
+
+        return $this;
+    }
+
 }

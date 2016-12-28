@@ -16,7 +16,7 @@ class CreatePaymentsTable extends Migration {
 
             //流水号
             $table->string('id')->primary();
-            $table->bigInteger('order_no');
+            $table->unsignedBigInteger('order_no');
             $table->string('transaction_no');
 
             //关联receipts

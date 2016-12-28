@@ -1,5 +1,9 @@
 <?php namespace Beansme\Payments;
 class Protocol {
+    //支付用户信息标识
+    const PAYER_ID_USER_ID = 'system';
+    const PAYER_ID_OPEN_ID = 'openid';
+
 
     //支付状态
     const STATUS_PAY_UNPAID = 'unpaid';

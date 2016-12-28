@@ -40,5 +40,8 @@
         "psr-4": {
             "Beansme\\Payments\\Test\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

@@ -20,18 +20,20 @@ class CreateReceiptsTable extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->string('subject', 32);
             $table->string('body', 128);
-            $table->string('invoice_no');
+            $table->string('invoice_no')->nullable();
 
             //gateway
-            $table->string('gateway', 32)->default('pingxx');
-            $table->string('app');
-            $table->string('channel', 32);
-            $table->string('payment_id'); // 成功支付id
-            $table->string('transaction_no');
+            $table->string('gateway', 32)->nullable();
+            $table->string('app')->nullable();
+            $table->string('channel', 32)->nullable();
+            $table->string('payment_id')->nullable(); // 成功支付id
+            $table->string('payment_type');
+            $table->string('transaction_no')->nullable();
 
             //金额
             $table->string('currency', 32)->default('cny');
             $table->unsignedInteger('amount');
+            $table->unsignedInteger('amount_refunded')->default(0);
 
             //时间
             $table->dateTime('time_paid')->nullable();

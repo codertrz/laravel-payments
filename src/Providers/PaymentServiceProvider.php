@@ -1,6 +1,7 @@
 <?php namespace Beansme\Payments\Providers;
 
 use Beansme\Payments\Http\Middleware\AuthorizePingxxNotify;
+use Beansme\Payments\Services\HelperAbstract;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
@@ -38,6 +39,9 @@ class PaymentServiceProvider extends ServiceProvider {
         $this->registerFacadeAliases();
         $this->registerMiddleware($router);
 
+        $configPath = __DIR__ . '/../config/debugbar.php';
+        $this->publishes([$configPath => $this->getConfigPath()], 'config');
+
         $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
         $this->loadRoutesFrom(__DIR__ . '/../../src/routes.php');
     }
@@ -64,6 +68,26 @@ class PaymentServiceProvider extends ServiceProvider {
     }
 
     /**
+     * Get the config path
+     *
+     * @return string
+     */
+    protected function getConfigPath()
+    {
+        return config_path('payments.php');
+    }
+
+    /**
+     * Publish the config file
+     *
+     * @param  string $configPath
+     */
+    protected function publishConfig($configPath)
+    {
+        $this->publishes([$configPath => config_path('payments.php')], 'config');
+    }
+
+    /**
      *
      */
     public function registerMiddleware(Router $router)
@@ -71,6 +95,17 @@ class PaymentServiceProvider extends ServiceProvider {
         foreach ($this->middleware as $alias => $handler) {
             $router->middleware($alias, $handler);
         }
+    }
+
+    public function register()
+    {
+        $configPath = __DIR__ . '/../config/payments.php';
+        $this->mergeConfigFrom($configPath, 'payments');
+
+        $this->app->bind(
+            HelperAbstract::class,
+            $this->app['config']->get('payments.helper')
+        );
     }
 
 }
