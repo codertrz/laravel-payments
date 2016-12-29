@@ -1,6 +1,5 @@
 <?php namespace Beansme\Payments\Services\Contracts;
 
-use Beansme\Payments\Models\RefundPayment;
 
 trait CanRefund {
 
@@ -9,13 +8,15 @@ trait CanRefund {
      */
     public function refunds()
     {
-        return $this->hasMany(RefundPayment::class, 'payment_id', $this->getRefundNo());
+        return $this->hasMany($this->getRefundPaymentsName(), 'payment_id', $this->getRefundNoKey());
     }
 
     /**
      *
      */
-    public abstract function getRefundNo();
+    public abstract function getRefundNoKey();
+
+    public abstract function getRefundPaymentsName();
 
     public function getRefundAmount()
     {

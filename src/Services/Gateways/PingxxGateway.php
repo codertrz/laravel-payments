@@ -7,7 +7,6 @@ use Beansme\Payments\Models\RefundPayment;
 use Beansme\Payments\Protocol;
 use Beansme\Payments\Services\Contracts\CanRefund;
 use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
-use Hafael\LaraFlake\LaraFlake;
 use Illuminate\Database\Eloquent\Model;
 use Pingpp\Charge;
 use Pingpp\Pingpp;
@@ -56,9 +55,9 @@ class PingxxGateway extends ThirdPartyGatewayContract {
     public function purchase(Receipt $receipt, $channel = null)
     {
         $charge = Charge::create([
-            "amount" => $receipt->getAmount(),
+            "amount" => $receipt->getPaymentAmount(),
             "channel" => $channel ?: self::PINGXX_WAP_CHANNEL_WECHAT,
-            "order_no" => LaraFlake::generateID(),
+            "order_no" => Protocol::generateId(),
             "currency" => Protocol::CURRENCY_OF_CNY,
             "client_ip" => \Request::ip(),
             "app" => ["id" => self::$config['app_id']],
@@ -83,7 +82,12 @@ class PingxxGateway extends ThirdPartyGatewayContract {
             return ($payment_id instanceof Payment) ? $payment_id : Payment::query()->findOrFail($payment_id);
         }
 
-        return $payment_id instanceof Charge ? $payment_id : Charge::retrieve($payment_id);
+        try {
+            return $payment_id instanceof Charge ? $payment_id : Charge::retrieve($payment_id);
+        } catch (\Pingpp\Error\Base $e) {
+            \Log::error('Pingxx 请求失败 ' . $e->getMessage());
+            throw new \Exception('Pingxx 请求失败');
+        }
     }
 
     /**
@@ -167,12 +171,17 @@ class PingxxGateway extends ThirdPartyGatewayContract {
 
     public function transactionIsPaid($payment_id)
     {
-        $payment = $this->fetchTransaction($payment_id, $local = true);
-        return $payment->isPaid() ?: function () use ($payment) {
-            $charge_paid = $this->isPaid($charge = $this->fetchTransaction($payment->getKey(), $local = false));
-            $this->processPurchase($payment, $charge);
-            return $charge_paid;
-        };
+        try {
+            $payment = $this->fetchTransaction($payment_id, $local = true);
+            return $payment->isPaid() ?: function () use ($payment) {
+                $charge_paid = $this->isPaid($charge = $this->fetchTransaction($payment->getKey(), $local = false));
+                $this->processPurchase($payment, $charge);
+                return $charge_paid;
+            };
+        } catch (\Exception $e) {
+            \Log::error($e);
+            return false;
+        }
     }
 
     /**
@@ -194,10 +203,10 @@ class PingxxGateway extends ThirdPartyGatewayContract {
 
     protected static function getExtraData($channel, Receipt $receipt)
     {
-        $mobile_success = self::$config['mobile_success'];
-        $mobile_cancel = self::$config['mobile_cancel'];
-        $pc_success = self::$config['pc_success'];
-        $pc_cancel = self::$config['pc_cancel'];
+        $mobile_success = self::$config['url_mobile_success'];
+        $mobile_cancel = self::$config['url_mobile_cancel'];
+        $pc_success = self::$config['url_pc_success'];
+        $pc_cancel = self::$config['url_pc_cancel'];
 
         switch ($channel) {
             case self::PINGXX_WAP_CHANNEL_ALIPAY:
@@ -229,7 +238,7 @@ class PingxxGateway extends ThirdPartyGatewayContract {
                 break;
             case self::PINGXX_WAP_CHANNEL_WECHAT:
                 $extra = [
-                    'open_id' => $receipt->getPayerID(Protocol::PAYER_ID_OPEN_ID)
+                    'open_id' => $receipt->getPaymentPayerID(Protocol::PAYER_ID_OPEN_ID)
                 ];
                 break;
             case self::PINGXX_SPECIAL_CHANNEL_WECHAT_QR:
@@ -291,7 +300,7 @@ class PingxxGateway extends ThirdPartyGatewayContract {
      */
     public function refund(CanRefund $payment, $desc, $amount = null)
     {
-        $charge = $this->fetchTransaction($payment->getRefundNo(), $local = false);
+        $charge = $this->fetchTransaction($payment->getRefundNoKey(), $local = false);
 
         $refund_charge = $charge->refunds->create([
             'amount' => $amount ?: $payment->getRefundAmount(),
@@ -321,7 +330,7 @@ class PingxxGateway extends ThirdPartyGatewayContract {
             return $payment->getRefunds();
         }
 
-        $charge = $this->fetchTransaction($payment->getRefundNo(), false);
+        $charge = $this->fetchTransaction($payment->getRefundNoKey(), false);
         if (!is_null($refund_id)) {
             if ($refund_id instanceof Refund) {
                 return $refund_id;

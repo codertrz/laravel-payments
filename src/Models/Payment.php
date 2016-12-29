@@ -2,13 +2,14 @@
 
 use Beansme\Payments\Events\Payments\PaymentPaid;
 use Beansme\Payments\Services\Contracts\CanRefund;
+use Beansme\Payments\Services\Contracts\PaymentForReceipt;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model {
 
-    use SoftDeletes, CanRefund;
+    use SoftDeletes, CanRefund, PaymentForReceipt;
 
     public $incrementing = false;
 
@@ -24,6 +25,7 @@ class Payment extends Model {
         'updated_at',
         'deleted_at',
     ];
+
 
     protected $casts = [
         'credential' => 'array'
@@ -55,9 +57,48 @@ class Payment extends Model {
     }
 
 
-    public function getRefundNo()
+    public function getRefundNoKey()
     {
         return $this->getKey();
     }
 
+    public function getRefundPaymentsName()
+    {
+        return RefundPayment::class;
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttributeValue('gateway');
+    }
+
+    public function getApp()
+    {
+        return $this->getAttributeValue('app');
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttributeValue('channel');
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getKey();
+    }
+
+    public function getTransactionNo()
+    {
+        return $this->getAttributeValue('transaction_no');
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttributeValue('currency');
+    }
+
+    public function getTimePaid()
+    {
+        return $this->getAttributeValue('time_paid');
+    }
 }
