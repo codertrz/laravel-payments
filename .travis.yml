@@ -1,11 +1,14 @@
 language: php
 
+services:
+  - mysql
+
 php:
   - 5.6
 
 before_script:
   - cp .env.travis .env
-  - mysql -e 'create database homestead_test;'
+  - mysql -e 'create database test;'
   - composer self-update
   - composer install --no-interaction
 

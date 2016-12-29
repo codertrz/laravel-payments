@@ -18,7 +18,7 @@
         <env name="TEST_PINGXX_API_KEY" value="sk_test_ibbTe5jLGCi5rzfH4OqPW9KC"/>
         <env name="PINGXX_APP_ID" value="app_1Gqj58ynP0mHeX1q"/>
         <env name="APP_ENV" value="testing"/>
-        <env name="DB_CONNECTION" value="testing"/>
+        <env name="DB_CONNECTION" value="mysql"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
