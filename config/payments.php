@@ -4,7 +4,10 @@ return [
 
     'default' => env('PAY_GATEWAY', 'pingxx'),
 
-    'helper' => 'helper class',
+    'helper_functions' => [
+//        'get_user_openid' => '\Beansme\Payments\Protocol::getUserOpenId', // php 7 only
+        'get_user_openid' => ['\Beansme\Payments\Protocol', 'getUserOpenId'] //
+    ],
     /*
     |--------------------------------------------------------------------------
     | 内置路由的属性
@@ -37,8 +40,9 @@ return [
                 'private_key' => file_get_contents(env('PINGXX_PRIVATE_KEY', '')),
                 'public_key' => env('PINGXX_PUBLIC_KEY', true),
             ],
-
-        ]
+        ],
+        'credits' => [],
+        'wallet' => []
     ]
 
 

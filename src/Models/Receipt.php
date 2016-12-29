@@ -68,7 +68,8 @@ class Receipt extends Model {
     {
         $user_id = $this->getAttributeValue('user_id');
         if ($type == Protocol::PAYER_ID_OPEN_ID) {
-            return app()->make(HelperAbstract::class)->getUserOpenId($user_id);
+            $getUserOpenidFunction = config('payments.helper_functions.get_user_openid');
+            return call_user_func($getUserOpenidFunction);
         }
 
         return $user_id;

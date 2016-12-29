@@ -29,5 +29,8 @@ class Protocol {
         return bcdiv($price, 100, 2);
     }
 
-
+    public static function getUserOpenId($user_id)
+    {
+        return $user_id;
+    }
 }
