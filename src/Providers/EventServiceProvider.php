@@ -6,7 +6,7 @@ class EventServiceProvider extends ServiceProvider {
 
     protected $listen = [
         'Beansme\Payments\Events\Payments\PaymentPaid' => [
-            'Beansme\Payments\Listeners\FinishReceiptPurchase'
+            'Beansme\Payments\Listeners\Receipts\FinishReceiptPurchase'
         ]
     ];
 

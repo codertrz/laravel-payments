@@ -50,7 +50,7 @@ class ThirdPartyReceiptTest extends TestCase {
     }
 
     /** @test */
-    public function it_request_a_pingxx_purchase()
+    public function it_can_request_a_pingxx_purchase()
     {
         $channel = PingxxGateway::PINGXX_SPECIAL_CHANNEL_WECHAT_QR;
         $charge = $this->pay->purchase($this->user_id, $this->order_no, $this->amount, $this->subject, $this->body, $channel);
@@ -60,9 +60,81 @@ class ThirdPartyReceiptTest extends TestCase {
         $this->assertTrue($charge instanceof Charge);
 
         $this->seeInDatabase('payments', ['id' => $charge['id']]);
-
         $this->seeInDatabase('payments', ['id' => $charge['id'], 'user_id' => $receipt['user_id'], 'receipt_id' => $receipt->getKey()]);
+
+        return $charge;
     }
 
-    
+
+    /** @test */
+    public function it_can_pay_a_pingxx_payment()
+    {
+        $charge = $this->it_can_request_a_pingxx_purchase();
+
+        $pay_url = "http://sissi.pingxx.com/notify.php?ch_id=" . $charge['id'];
+
+//        $pay_url = $charge['credential'][$charge['channel']];
+
+        $result = $this->visitUrl($pay_url);
+
+        return $charge;
+    }
+
+    /** @test */
+    public function it_can_finish_purchase_process_by_check()
+    {
+        $charge = $this->it_can_pay_a_pingxx_payment();
+
+        $payment_id = $charge['id'];
+
+        $charge_paid = $this->pay->gateway()->transactionIsPaid($payment_id);
+        $this->assertTrue($charge_paid);
+
+        $this->checkPaid($payment_id);
+    }
+
+    /** @test */
+    public function it_can_finish_purchase_process_by_notify()
+    {
+        $charge = $this->it_can_pay_a_pingxx_payment();
+        $payment_id = $charge['id'];
+
+        $charge = $this->pay->gateway()->fetchTransaction($payment_id, false);
+
+//        $charge_array = json_decode((string)$charge, true);
+
+        $event = [
+            'id' => 'event_' . $payment_id,
+            'livemode' => true,
+            'type' => 1,
+            'data' => [
+                'object' => $charge
+            ]
+        ];
+
+        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/paid', $event);
+        $this->assertResponseStatus(403);
+        $event['livemode'] = false;
+
+
+        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/paid', $event);
+        $this->assertResponseStatus(422);
+        $event['type'] = PingxxGateway::PINGXX_EVENT_PAID_SUCCEED;
+
+        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/paid', $event);
+        $this->assertResponseOk();
+
+        $this->checkPaid($payment_id);
+
+    }
+
+    protected function checkPaid($payment_id)
+    {
+        $payment = Payment::query()->findOrFail($payment_id);
+        $this->assertTrue($payment->isPaid());
+
+        $receipt = Receipt::query()->where('payment_id', $payment_id)->firstOrFail();
+        $this->assertTrue($receipt->isPaid());
+    }
+
 }

@@ -9,19 +9,19 @@ trait PaymentForReceipt {
         return 'receipt_id';
     }
 
-    public abstract function getGateway();
+    abstract public function getGateway();
 
-    public abstract function getApp();
+    abstract public function getApp();
 
-    public abstract function getChannel();
+    abstract public function getChannel();
 
-    public abstract function getPaymentId();
+    abstract public function getPaymentId();
 
-    public abstract function getTransactionNo();
+    abstract public function getTransactionNo();
 
-    public abstract function getCurrency();
+    abstract public function getCurrency();
 
-    public abstract function getTimePaid();
+    abstract public function getTimePaid();
 
     public function receipt()
     {

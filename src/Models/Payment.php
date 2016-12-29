@@ -41,7 +41,7 @@ class Payment extends Model {
 
     public function isPaid()
     {
-        return $this->getAttributeValue('paid');
+        return $this->getAttributeValue('paid') ? true : false;
     }
 
     //operation
@@ -49,10 +49,11 @@ class Payment extends Model {
     {
         if (!$this->isPaid()) {
             $this->setAttribute('transaction_no', $transaction_no);
-            $this->setAttribute('time_paid', (is_null($time_paid) ? Carbon::now() : Carbon::parse($time_paid)));
+            $this->setAttribute('time_paid', (is_null($time_paid) ? Carbon::now() : Carbon::createFromTimestamp($time_paid)));
             $this->setAttribute('paid', true);
             $this->save();
         }
+
         event(new PaymentPaid($this));
     }
 

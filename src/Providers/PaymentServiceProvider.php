@@ -35,13 +35,13 @@ class PaymentServiceProvider extends ServiceProvider {
      */
     public function boot(Router $router)
     {
-        $this->registerServiceProviders();
-        $this->registerFacadeAliases();
-        $this->registerMiddleware($router);
-
         $this->publishes([
             $this->getConfigPath() => config_path('payments.php')
         ], 'config');
+
+        $this->registerServiceProviders();
+        $this->registerFacadeAliases();
+        $this->registerMiddleware($router);
 
         $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
         $this->loadRoutesFrom(__DIR__ . '/../../src/routes.php');
@@ -115,6 +115,7 @@ class PaymentServiceProvider extends ServiceProvider {
 
     public function register()
     {
+
         $this->mergeConfigFrom($this->getConfigPath(), 'payments');
 
         $this->registerCommands();

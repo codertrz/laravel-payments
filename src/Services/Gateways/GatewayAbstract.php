@@ -10,6 +10,7 @@ abstract class GatewayAbstract {
     /**
      * Init
      */
+
     /**
      * @var array $config
      */

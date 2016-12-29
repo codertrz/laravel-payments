@@ -104,7 +104,7 @@ class Receipt extends Model {
     }
 
     //操作
-    public function setAsPaid(PaymentForReceipt $payment)
+    public function setAsPaid($payment)
     {
         if (!$this->isPaid()) {
             $this->setAttribute('gateway', $payment->getGateway());
