@@ -2,17 +2,13 @@
 
 use Beansme\Payments\Events\Receipts\ReceiptPaid;
 use Beansme\Payments\Protocol;
-use Beansme\Payments\Services\Contracts\CanRefund;
-use Beansme\Payments\Services\Contracts\NeedPay;
-use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
-use Beansme\Payments\Services\HelperAbstract;
-use Hafael\LaraFlake\Traits\LaraFlakeTrait;
+use Beansme\Payments\Services\Contracts\PaymentForReceipt;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Receipt extends Model {
 
-    use SoftDeletes, LaraFlakeTrait, CanRefund;
+    use SoftDeletes;
 
     public $incrementing = false;
 
@@ -27,24 +23,29 @@ class Receipt extends Model {
         'deleted_at',
     ];
 
-    //成功支付记录
-    public function payment()
-    {
-        return $this->hasOne(Payment::class, 'id', 'payment_id');
-    }
-
     //发起支付记录
     public function payments()
     {
-        return $this->hasMany(Payment::class, 'receipt_id', 'id');
+        return $this->hasMany($this->getAttributeValue('payment_type'), PaymentForReceipt::getReceiptKeyName(), $this->getKeyName());
+    }
+
+    //成功支付记录
+    public function payment()
+    {
+        return $this->morphTo();
+    }
+
+    protected function getPaymentKeyName()
+    {
+        return 'payment_id';
     }
 
     public function getPaymentId()
     {
-        return $this->getAttributeValue('payment_id');
+        return $this->getAttributeValue($this->getPaymentKeyName());
     }
 
-    public function getAmount()
+    public function getPaymentAmount()
     {
         return $this->getAttributeValue('amount');
     }
@@ -64,9 +65,14 @@ class Receipt extends Model {
         return $this->getOrderNo();
     }
 
-    public function getPayerID($type = Protocol::PAYER_ID_USER_ID)
+    protected function getPayerKeyName()
     {
-        $user_id = $this->getAttributeValue('user_id');
+        return 'user_id';
+    }
+
+    public function getPaymentPayerID($type = Protocol::PAYER_ID_USER_ID)
+    {
+        $user_id = $this->getAttributeValue($this->getPaymentKeyName());
         if ($type == Protocol::PAYER_ID_OPEN_ID) {
             $getUserOpenidFunction = config('payments.helper_functions.get_user_openid');
             return call_user_func($getUserOpenidFunction);
@@ -75,17 +81,9 @@ class Receipt extends Model {
         return $user_id;
     }
 
-
-    public function setAmountAttribute($amount)
-    {
-        $this->setAttribute('amount', $amount);
-        $this->setAttribute('refundable_amount', $amount);
-    }
-
     /**
      * 判断
      */
-
     public function isPaid()
     {
         return $this->getAttributeValue('pay_status') == Protocol::STATUS_PAY_PAID;
@@ -106,16 +104,16 @@ class Receipt extends Model {
     }
 
     //操作
-    public function setAsPaid(Payment $payment)
+    public function setAsPaid($payment)
     {
         if (!$this->isPaid()) {
-            $this->setAttribute('gateway', $payment->getAttributeValue('gateway'));
-            $this->setAttribute('app', $payment->getAttributeValue('app'));
-            $this->setAttribute('channel', $payment->getAttributeValue('channel'));
-            $this->setAttribute('payment_id', $payment->getAttributeValue('id'));
-            $this->setAttribute('transaction_no', $payment->getAttributeValue('transaction_no'));
-            $this->setAttribute('currency', $payment->getAttributeValue('currency'));
-            $this->setAttribute('time_paid', $payment->getAttributeValue('time_paid'));
+            $this->setAttribute('gateway', $payment->getGateway());
+            $this->setAttribute('app', $payment->getApp());
+            $this->setAttribute('channel', $payment->getChannel());
+            $this->setAttribute('payment_id', $payment->getPaymentId());
+            $this->setAttribute('transaction_no', $payment->getTransactionNo());
+            $this->setAttribute('currency', $payment->getCurrency());
+            $this->setAttribute('time_paid', $payment->getTimePaid());
             $this->setAttribute('pay_status', Protocol::STATUS_PAY_PAID);
             $this->save();
         }
@@ -124,11 +122,4 @@ class Receipt extends Model {
     }
 
 
-    /**
-     *
-     */
-    public function getRefundNo()
-    {
-        return $this->getPaymentId();
-    }
 }

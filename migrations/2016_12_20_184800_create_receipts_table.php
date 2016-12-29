@@ -13,7 +13,7 @@ class CreateReceiptsTable extends Migration {
     public function up()
     {
         Schema::create('receipts', function (Blueprint $table) {
-            $table->bigInteger('id')->unsigned()->primary(); // order id
+            $table->unsignedBigInteger('id')->primary();
 
             //order info
             $table->unsignedBigInteger('order_no');
@@ -45,6 +45,8 @@ class CreateReceiptsTable extends Migration {
 
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index('order_no');
         });
     }
 

@@ -5,7 +5,9 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 class EventServiceProvider extends ServiceProvider {
 
     protected $listen = [
-        
+        'Beansme\Payments\Events\Payments\PaymentPaid' => [
+            'Beansme\Payments\Listeners\Receipts\FinishReceiptPurchase'
+        ]
     ];
 
 }

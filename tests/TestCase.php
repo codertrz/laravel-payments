@@ -31,13 +31,13 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase {
     protected function getEnvironmentSetUp($app)
     {
         // Setup default database to use sqlite :memory:
-        $app['config']->set('database.default', 'testing');
+//        $app['config']->set('database.default', 'testing');
 
         //test by mysql
-//        $app['config']->set('database.default', 'mysql');
-//        $app['config']->set('database.connections.mysql.database', 'payment_testing');
-//        $app['config']->set('database.connections.mysql.username', 'root');
-//        $app['config']->set('database.connections.mysql.password', '');
+        $app['config']->set('database.default', 'mysql');
+        $app['config']->set('database.connections.mysql.database', 'test');
+        $app['config']->set('database.connections.mysql.username', 'root');
+        $app['config']->set('database.connections.mysql.password', '');
     }
 
     protected function dumpResponse()

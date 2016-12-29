@@ -1,6 +1,6 @@
 <?php namespace Beansme\Payments\Services\Receipts;
 
-use Beansme\Payments\Models\Pingxx\Charge;
+use Pingpp\Charge;
 
 interface ReceiptServiceContract {
 
@@ -28,6 +28,8 @@ interface ReceiptServiceContract {
      * @return mixed
      */
     public function refund($receipt_id, $amount, $desc);
+
+    public function gateway();
 
 
 }
