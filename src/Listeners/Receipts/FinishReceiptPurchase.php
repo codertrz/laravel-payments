@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments\Listeners;
+<?php namespace Beansme\Payments\Listeners\Receipts;
 
 use Beansme\Payments\Events\Payments\PaymentPaid;
 use Beansme\Payments\Models\Receipt;

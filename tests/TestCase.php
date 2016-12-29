@@ -31,13 +31,26 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase {
     protected function getEnvironmentSetUp($app)
     {
         // Setup default database to use sqlite :memory:
-        $app['config']->set('database.default', 'testing');
+//        $app['config']->set('database.default', 'testing');
 
         //test by mysql
-//        $app['config']->set('database.default', 'mysql');
-//        $app['config']->set('database.connections.mysql.database', 'payment_testing');
-//        $app['config']->set('database.connections.mysql.username', 'root');
-//        $app['config']->set('database.connections.mysql.password', '');
+
+        $app['config']->set('database.connections.mysql.testing', [
+            'driver' => 'mysql',
+            'host' => env('DB_TEST_HOST', 'localhost'),
+            'database' => env('DB_TEST_DATABASE', 'homestead_test'),
+            'username' => env('DB_TEST_USERNAME', 'homestead'),
+            'password' => env('DB_TEST_PASSWORD', 'secret'),
+            'charset' => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix' => '',
+            'strict' => false,
+        ]);
+
+        $app['config']->set('database.default', 'mysql');
+        $app['config']->set('database.connections.mysql.database', 'test');
+        $app['config']->set('database.connections.mysql.username', 'root');
+        $app['config']->set('database.connections.mysql.password', '');
     }
 
     protected function dumpResponse()

@@ -10,6 +10,7 @@ abstract class GatewayAbstract {
     /**
      * Init
      */
+
     /**
      * @var array $config
      */
@@ -21,6 +22,17 @@ abstract class GatewayAbstract {
     }
 
     public abstract function configName();
+
+    public function getPaymentType()
+    {
+        return self::$config['payment_type'];
+    }
+
+    public function getRefundPaymentType()
+    {
+        return self::$config['refund_payment_type'];
+    }
+
 
     /**
      * Purchase

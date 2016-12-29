@@ -15,7 +15,7 @@ class CreatePaymentsRefundTable extends Migration {
         Schema::create('refund_payments', function (Blueprint $table) {
 
             //流水号
-            $table->string('id')->primary();
+            $table->string('id');
             $table->unsignedBigInteger('payment_order_no');
             $table->string('refund_order_no'); // generate by pingxx
             $table->string('transaction_no');
@@ -40,6 +40,7 @@ class CreatePaymentsRefundTable extends Migration {
             $table->softDeletes();
             $table->timestamps();
 
+            $table->index('payment_id');
         });
     }
 

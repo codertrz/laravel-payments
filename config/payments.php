@@ -4,7 +4,9 @@ return [
 
     'default' => env('PAY_GATEWAY', 'pingxx'),
 
-    'helper' => 'helper class',
+    'helper_functions' => [
+        'get_user_openid' => '\Beansme\Payments\Protocol::getUserOpenId', // Class::staticFunction | [Class, function]
+    ],
     /*
     |--------------------------------------------------------------------------
     | 内置路由的属性
@@ -28,17 +30,28 @@ return [
             'api_key' => env(env('PINGXX_ACCOUNT_ENV', 'TEST') . '_PINGXX_API_KEY'),
             'app_id' => env('PINGXX_APP_ID'),
             'live' => env('PINGXX_LIVE_MODE', false),
+
+            'url_mobile_success' => '',
+            'url_mobile_cancel' => '',
+            'url_pc_success' => '',
+            'url_pc_cancel' => '',
+
             /**
              * rsa
              */
             'signature' => [
                 'enable' => env('PINGXX_RSA', true),
                 //rsa key 内容
-                'private_key' => file_get_contents(env('PINGXX_PRIVATE_KEY', '')),
-                'public_key' => env('PINGXX_PUBLIC_KEY', true),
+                'private_key_path' => env('PINGXX_PRIVATE_KEY_PATH', false),
+                'public_key_path' => env('PINGXX_PUBLIC_KEY_PATH', false),
             ],
 
-        ]
+            //system setting
+            'payment_type' => '\Beansme\Payments\Models\Payment',
+            'refund_payment_type' => '\Beansme\Payments\Models\RefundPayment',
+        ],
+        'credits' => [],
+        'wallet' => []
     ]
 
 

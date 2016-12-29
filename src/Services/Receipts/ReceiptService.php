@@ -1,7 +1,7 @@
 <?php namespace Beansme\Payments\Services\Receipts;
 
 use Beansme\Payments\Models\Payment;
-use Beansme\Payments\Models\Pingxx\Charge;
+use Pingpp\Charge;
 use Beansme\Payments\Models\Receipt;
 use Beansme\Payments\Protocol;
 use Beansme\Payments\Services\Gateways\Exceptions\CanNotRefundException;
@@ -9,7 +9,7 @@ use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
 use Beansme\Payments\Services\Gateways\GatewayAbstract;
 use Illuminate\Database\Eloquent\Model;
 
-abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
+class ReceiptService implements ReceiptServiceContract {
 
     /**
      * @var GatewayAbstract
@@ -25,7 +25,6 @@ abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
         $this->gateway = $gateway;
     }
 
-    protected abstract function getPaymentType();
 
     /**
      * get or create order_no receipt
@@ -40,7 +39,7 @@ abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
         }
 
         if ($by_order) {
-            return Receipt::query()->where('order_no', $order_no)->where('payment_type', $this->getPaymentType())->first();
+            return Receipt::query()->where('order_no', $order_no)->where('payment_type', $this->gateway->getPaymentType())->first();
         }
 
         return Receipt::query()->findOrFail($order_no);
@@ -53,15 +52,17 @@ abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
         }
 
         return Receipt::create([
+            'id' => Protocol::generateId(),
             'user_id' => $user_id,
             'order_no' => $order_no,
             'subject' => $subject,
             'body' => $body,
-            'payment_type' => $this->getPaymentType(),
+            'payment_type' => $this->gateway->getPaymentType(),
             'amount' => $amount,
             'amount_refunded' => 0,
             'pay_status' => Protocol::STATUS_PAY_UNPAID,
             'refund_status' => Protocol::STATUS_REFUND_NONE,
+            'invoice_status' => Protocol::STATUS_INVOICE_NONE
         ]);
     }
 
@@ -85,16 +86,21 @@ abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
         return $this->gateway->purchase($receipt, $channel);
     }
 
+    /**
+     * @param $receipt
+     * @return boolean
+     */
     public function isPaid($receipt)
     {
         $receipt = $this->fetchReceipt($receipt, $by_order = false);
-        return $receipt->isPaid() ?: function () use ($receipt) {
+
+        return $receipt->isPaid() ?: call_user_func(function () use ($receipt) {
             $payment = $this->gateway->receiptIsPaid($receipt->getKey());
             if (!is_null($payment) && $payment instanceof Payment) {
                 $receipt->setAsPaid($payment);
             }
             return $payment ? true : false;
-        };
+        });
     }
 
     /**
@@ -117,4 +123,11 @@ abstract class ReceiptServiceAbstract implements ReceiptServiceContract {
         return $refund_charge;
     }
 
+    /**
+     * @return GatewayAbstract
+     */
+    public function gateway()
+    {
+        return $this->gateway;
+    }
 }

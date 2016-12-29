@@ -1,7 +1,8 @@
 <?php namespace Beansme\Payments\Providers;
 
+use Beansme\Payments\Facade;
 use Beansme\Payments\Http\Middleware\AuthorizePingxxNotify;
-use Beansme\Payments\Services\HelperAbstract;
+use Beansme\Payments\Services\PayFactory;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +20,7 @@ class PaymentServiceProvider extends ServiceProvider {
      * @var array
      */
     protected $facadeAliases = [
-
+        'Pay' => Facade::class
     ];
 
     /**
@@ -27,7 +28,6 @@ class PaymentServiceProvider extends ServiceProvider {
      */
     protected $providers = [
         EventServiceProvider::class,
-        \Hafael\LaraFlake\LaraFlakeServiceProvider::class
     ];
 
     /**
@@ -35,16 +35,37 @@ class PaymentServiceProvider extends ServiceProvider {
      */
     public function boot(Router $router)
     {
+        $this->publishes([
+            $this->getConfigPath() => config_path('payments.php')
+        ], 'config');
+
         $this->registerServiceProviders();
         $this->registerFacadeAliases();
         $this->registerMiddleware($router);
 
-        $configPath = __DIR__ . '/../config/debugbar.php';
-        $this->publishes([$configPath => $this->getConfigPath()], 'config');
-
         $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
         $this->loadRoutesFrom(__DIR__ . '/../../src/routes.php');
+
+
+        $this->app->singleton('payments', function ($app) {
+            return new PayFactory();
+        });
+
+        $this->app->alias('payments', PayFactory::class);
+
     }
+
+    protected function registerCommands()
+    {
+//        $this->app['command.debugbar.clear'] = $this->app->share(
+//            function ($app) {
+//                return new Console\ClearCommand($app['debugbar']);
+//            }
+//        );
+//
+//        $this->commands(['command.debugbar.clear']);
+    }
+
 
     /**
      * Load local service providers
@@ -67,14 +88,9 @@ class PaymentServiceProvider extends ServiceProvider {
         }
     }
 
-    /**
-     * Get the config path
-     *
-     * @return string
-     */
     protected function getConfigPath()
     {
-        return config_path('payments.php');
+        return __DIR__ . '/../../config/payments.php';
     }
 
     /**
@@ -99,13 +115,21 @@ class PaymentServiceProvider extends ServiceProvider {
 
     public function register()
     {
-        $configPath = __DIR__ . '/../config/payments.php';
-        $this->mergeConfigFrom($configPath, 'payments');
 
-        $this->app->bind(
-            HelperAbstract::class,
-            $this->app['config']->get('payments.helper')
-        );
+        $this->mergeConfigFrom($this->getConfigPath(), 'payments');
+
+        $this->registerCommands();
+
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return ['payments'];
     }
 
 }

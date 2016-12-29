@@ -15,9 +15,9 @@ class CreatePaymentsTable extends Migration {
         Schema::create('payments', function (Blueprint $table) {
 
             //流水号
-            $table->string('id')->primary();
+            $table->string('id');
             $table->unsignedBigInteger('order_no');
-            $table->string('transaction_no');
+            $table->string('transaction_no')->nullable();
 
             //关联receipts
             $table->unsignedBigInteger('receipt_id');
@@ -55,6 +55,8 @@ class CreatePaymentsTable extends Migration {
             $table->softDeletes();
             $table->timestamps();
 
+            $table->index('id');
+            $table->index('receipt_id');
         });
     }
 

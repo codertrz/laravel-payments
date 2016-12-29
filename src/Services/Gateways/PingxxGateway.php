@@ -7,13 +7,12 @@ use Beansme\Payments\Models\RefundPayment;
 use Beansme\Payments\Protocol;
 use Beansme\Payments\Services\Contracts\CanRefund;
 use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
-use Hafael\LaraFlake\LaraFlake;
 use Illuminate\Database\Eloquent\Model;
 use Pingpp\Charge;
 use Pingpp\Pingpp;
 use Pingpp\Refund;
 
-class PingxxGateway extends ThirdPartyGatewayContract {
+class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
 
     const PINGXX_APP_CHANNEL_ALIPAY = 'alipay';
     const PINGXX_APP_CHANNEL_WECHAT = 'wx';
@@ -56,9 +55,9 @@ class PingxxGateway extends ThirdPartyGatewayContract {
     public function purchase(Receipt $receipt, $channel = null)
     {
         $charge = Charge::create([
-            "amount" => $receipt->getAmount(),
+            "amount" => $receipt->getPaymentAmount(),
             "channel" => $channel ?: self::PINGXX_WAP_CHANNEL_WECHAT,
-            "order_no" => LaraFlake::generateID(),
+            "order_no" => Protocol::generateId(),
             "currency" => Protocol::CURRENCY_OF_CNY,
             "client_ip" => \Request::ip(),
             "app" => ["id" => self::$config['app_id']],
@@ -83,7 +82,12 @@ class PingxxGateway extends ThirdPartyGatewayContract {
             return ($payment_id instanceof Payment) ? $payment_id : Payment::query()->findOrFail($payment_id);
         }
 
-        return $payment_id instanceof Charge ? $payment_id : Charge::retrieve($payment_id);
+        try {
+            return $payment_id instanceof Charge ? $payment_id : Charge::retrieve($payment_id);
+        } catch (\Pingpp\Error\Base $e) {
+            \Log::error('Pingxx 请求失败 ' . $e->getMessage());
+            throw new \Exception('Pingxx 请求失败');
+        }
     }
 
     /**
@@ -162,17 +166,24 @@ class PingxxGateway extends ThirdPartyGatewayContract {
             return $charge['paid'] && $charge['livemode'];
         }
 
-        return $charge->paid;
+        return $charge['paid'];
     }
 
     public function transactionIsPaid($payment_id)
     {
-        $payment = $this->fetchTransaction($payment_id, $local = true);
-        return $payment->isPaid() ?: function () use ($payment) {
-            $charge_paid = $this->isPaid($charge = $this->fetchTransaction($payment->getKey(), $local = false));
-            $this->processPurchase($payment, $charge);
-            return $charge_paid;
-        };
+        try {
+            $payment = $this->fetchTransaction($payment_id, $local = true);
+            return $payment->isPaid() ?: call_user_func(function () use ($payment) {
+                $charge_paid = $this->isPaid($charge = $this->fetchTransaction($payment->getKey(), $local = false));
+                if ($charge_paid) {
+                    $this->processPurchase($payment, $charge);
+                }
+                return $charge_paid;
+            });
+        } catch (\Exception $e) {
+            \Log::error($e);
+            return false;
+        }
     }
 
     /**
@@ -194,10 +205,10 @@ class PingxxGateway extends ThirdPartyGatewayContract {
 
     protected static function getExtraData($channel, Receipt $receipt)
     {
-        $mobile_success = self::$config['mobile_success'];
-        $mobile_cancel = self::$config['mobile_cancel'];
-        $pc_success = self::$config['pc_success'];
-        $pc_cancel = self::$config['pc_cancel'];
+        $mobile_success = self::$config['url_mobile_success'];
+        $mobile_cancel = self::$config['url_mobile_cancel'];
+        $pc_success = self::$config['url_pc_success'];
+        $pc_cancel = self::$config['url_pc_cancel'];
 
         switch ($channel) {
             case self::PINGXX_WAP_CHANNEL_ALIPAY:
@@ -229,7 +240,7 @@ class PingxxGateway extends ThirdPartyGatewayContract {
                 break;
             case self::PINGXX_WAP_CHANNEL_WECHAT:
                 $extra = [
-                    'open_id' => $receipt->getPayerID(Protocol::PAYER_ID_OPEN_ID)
+                    'open_id' => $receipt->getPaymentPayerID(Protocol::PAYER_ID_OPEN_ID)
                 ];
                 break;
             case self::PINGXX_SPECIAL_CHANNEL_WECHAT_QR:
@@ -291,7 +302,7 @@ class PingxxGateway extends ThirdPartyGatewayContract {
      */
     public function refund(CanRefund $payment, $desc, $amount = null)
     {
-        $charge = $this->fetchTransaction($payment->getRefundNo(), $local = false);
+        $charge = $this->fetchTransaction($payment->getRefundNoKey(), $local = false);
 
         $refund_charge = $charge->refunds->create([
             'amount' => $amount ?: $payment->getRefundAmount(),
@@ -321,7 +332,7 @@ class PingxxGateway extends ThirdPartyGatewayContract {
             return $payment->getRefunds();
         }
 
-        $charge = $this->fetchTransaction($payment->getRefundNo(), false);
+        $charge = $this->fetchTransaction($payment->getRefundNoKey(), false);
         if (!is_null($refund_id)) {
             if ($refund_id instanceof Refund) {
                 return $refund_id;
@@ -375,6 +386,42 @@ class PingxxGateway extends ThirdPartyGatewayContract {
     protected function getRefundPayment($refund_id)
     {
         return RefundPayment::query()->findOrFail($refund_id);
+    }
+
+    /**
+     * Event Handler
+     */
+
+    const PINGXX_EVENT_SUMMARY_DAILY = 'summary.daily.available'; //上一天 0 点到 23 点 59 分 59 秒的交易金额和交易量统计，在每日 02:00 点左右触发。
+    const PINGXX_EVENT_SUMMARY_WEEKLY = 'summary.weekly.available'; //上周一 0 点至上周日 23 点 59 分 59 秒的交易金额和交易量统计，在每周一 02:00 点左右触发。
+    const PINGXX_EVENT_SUMMARY_MONTHLY = 'summary.monthly.available'; //上月一日 0 点至上月末 23 点 59 分 59 秒的交易金额和交易量统计，在每月一日 02:00 点左右触发。
+    const PINGXX_EVENT_PAID_SUCCEED = 'charge.succeeded';
+    const PINGXX_EVENT_REFUND_SUCCEED = 'refund.succeeded';
+    const PINGXX_EVENT_TRANSFER_SUCCEED = 'transfer.succeeded'; //企业支付对象，支付成功时触发。
+    const PINGXX_EVENT_RED_SENT = 'red_envelope.sent'; //红包对象，红包发送成功时触发。
+    const PINGXX_EVENT_RED_RECEIVED = 'red_envelope.received'; //红包对象，红包接收成功时触发。
+    const PINGXX_EVENT_BATCH_TRANSFER_SUCCEED = 'batch_transfer.succeeded'; //批量企业付款对象，批量企业付款成功时触发。
+
+    public function handle($event)
+    {
+        $this->eventStartLog($event);
+
+        $event_type = $event['type'];
+        switch ($event_type) {
+            case self::PINGXX_EVENT_PAID_SUCCEED:
+                if ($this->isPaid($event['data.object'])) {
+
+                }
+        }
+
+    }
+
+    protected function eventStartLog($event)
+    {
+        \Log::info('Pingxx Event Start: ');
+        \Log::info('Pingxx Event id: ' . $event['id']);
+        \Log::info('Pingxx Event mode: ' . $event['livemode']);
+        \Log::info('Pingxx Event type: ' . $event['type']);
     }
 
 
