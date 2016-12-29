@@ -35,7 +35,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase {
 
         //test by mysql
 
-        $app['config']->set('database.connections.mysql.testing', [
+        $app['config']->set('database.connections.testing', [
             'driver' => 'mysql',
             'host' => env('DB_TEST_HOST', 'localhost'),
             'database' => env('DB_TEST_DATABASE', 'homestead_test'),
@@ -47,7 +47,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase {
             'strict' => false,
         ]);
 
-        $app['config']->set('database.default', 'mysql');
         $app['config']->set('database.connections.mysql.database', 'test');
         $app['config']->set('database.connections.mysql.username', 'root');
         $app['config']->set('database.connections.mysql.password', '');
