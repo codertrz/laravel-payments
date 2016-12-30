@@ -1,8 +1,8 @@
-<?php namespace Beansme\Payments\Providers;
+<?php namespace BTWay\Payments\Providers;
 
-use Beansme\Payments\Facade;
-use Beansme\Payments\Http\Middleware\AuthorizePingxxNotify;
-use Beansme\Payments\Services\PayFactory;
+use BTWay\Payments\Facade;
+use BTWay\Payments\Http\Middleware\AuthorizePingxxNotify;
+use BTWay\Payments\Services\PayFactory;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;

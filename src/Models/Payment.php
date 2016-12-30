@@ -1,8 +1,8 @@
-<?php namespace Beansme\Payments\Models;
+<?php namespace BTWay\Payments\Models;
 
-use Beansme\Payments\Events\Payments\PaymentPaid;
-use Beansme\Payments\Services\Contracts\CanRefund;
-use Beansme\Payments\Services\Contracts\PaymentForReceipt;
+use BTWay\Payments\Events\Payments\PaymentPaid;
+use BTWay\Payments\Services\Contracts\CanRefund;
+use BTWay\Payments\Services\Contracts\PaymentForReceipt;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

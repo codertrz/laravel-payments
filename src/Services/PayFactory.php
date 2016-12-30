@@ -1,9 +1,9 @@
-<?php namespace Beansme\Payments\Services;
+<?php namespace BTWay\Payments\Services;
 
-use Beansme\Payments\Protocol;
-use Beansme\Payments\Services\Gateways\PingxxGateway;
-use Beansme\Payments\Services\Receipts\ReceiptService;
-use Beansme\Payments\Services\Receipts\ReceiptServiceContract;
+use BTWay\Payments\Protocol;
+use BTWay\Payments\Services\Gateways\PingxxGateway;
+use BTWay\Payments\Services\Receipts\ReceiptService;
+use BTWay\Payments\Services\Receipts\ReceiptServiceContract;
 
 class PayFactory {
 

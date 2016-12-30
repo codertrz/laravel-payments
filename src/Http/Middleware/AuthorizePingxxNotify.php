@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments\Http\Middleware;
+<?php namespace BTWay\Payments\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

@@ -1,7 +1,7 @@
-<?php namespace Beansme\Payments\Test;
+<?php namespace BTWay\Payments\Test;
 
-use Beansme\Payments\Services\PayFactory;
-use Beansme\Payments\Services\Receipts\ReceiptService;
+use BTWay\Payments\Services\PayFactory;
+use BTWay\Payments\Services\Receipts\ReceiptService;
 
 class PayFactoryTest extends TestCase {
 

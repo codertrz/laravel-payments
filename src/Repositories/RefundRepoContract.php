@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Repositories;
+<?php namespace BTWay\Payments\Repositories;
 
-use Beansme\Payments\Models\Payment;
+use BTWay\Payments\Models\Payment;
 
 interface RefundRepoContract {
 

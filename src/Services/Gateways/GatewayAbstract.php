@@ -1,9 +1,9 @@
-<?php namespace Beansme\Payments\Services\Gateways;
+<?php namespace BTWay\Payments\Services\Gateways;
 
-use Beansme\Payments\Models\Payment;
-use Beansme\Payments\Models\Receipt;
-use Beansme\Payments\Models\RefundPayment;
-use Beansme\Payments\Services\Contracts\CanRefund;
+use BTWay\Payments\Models\Payment;
+use BTWay\Payments\Models\Receipt;
+use BTWay\Payments\Models\RefundPayment;
+use BTWay\Payments\Services\Contracts\CanRefund;
 
 abstract class GatewayAbstract {
 

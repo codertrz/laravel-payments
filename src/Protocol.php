@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments;
+<?php namespace BTWay\Payments;
 
-use Beansme\Payments\Models\Payment;
+use BTWay\Payments\Models\Payment;
 
 class Protocol {
 

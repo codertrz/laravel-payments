@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments;
+<?php namespace BTWay\Payments;
 class Facade extends \Illuminate\Support\Facades\Facade {
 
     /**

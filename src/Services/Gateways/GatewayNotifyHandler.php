@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments\Services\Gateways;
+<?php namespace BTWay\Payments\Services\Gateways;
 
 interface GatewayNotifyHandler {
 

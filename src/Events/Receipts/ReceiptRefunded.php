@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Events\Receipts;
+<?php namespace BTWay\Payments\Events\Receipts;
 
-use Beansme\Payments\Models\Receipt;
+use BTWay\Payments\Models\Receipt;
 use Illuminate\Queue\SerializesModels;
 
 class ReceiptRefunded {

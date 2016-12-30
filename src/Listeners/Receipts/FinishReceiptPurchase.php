@@ -1,7 +1,7 @@
-<?php namespace Beansme\Payments\Listeners\Receipts;
+<?php namespace BTWay\Payments\Listeners\Receipts;
 
-use Beansme\Payments\Events\Payments\PaymentPaid;
-use Beansme\Payments\Models\Receipt;
+use BTWay\Payments\Events\Payments\PaymentPaid;
+use BTWay\Payments\Models\Receipt;
 
 class FinishReceiptPurchase {
 

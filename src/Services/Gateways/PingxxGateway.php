@@ -1,12 +1,12 @@
-<?php namespace Beansme\Payments\Services\Gateways;
+<?php namespace BTWay\Payments\Services\Gateways;
 
-use Beansme\Payments\Events\Payments\PaymentRefundApply;
-use Beansme\Payments\Models\Payment;
-use Beansme\Payments\Models\Receipt;
-use Beansme\Payments\Models\RefundPayment;
-use Beansme\Payments\Protocol;
-use Beansme\Payments\Services\Contracts\CanRefund;
-use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
+use BTWay\Payments\Events\Payments\PaymentRefundApply;
+use BTWay\Payments\Models\Payment;
+use BTWay\Payments\Models\Receipt;
+use BTWay\Payments\Models\RefundPayment;
+use BTWay\Payments\Protocol;
+use BTWay\Payments\Services\Contracts\CanRefund;
+use BTWay\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
 use Illuminate\Database\Eloquent\Model;
 use Pingpp\Charge;
 use Pingpp\Pingpp;

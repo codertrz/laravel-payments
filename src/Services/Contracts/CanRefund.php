@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments\Services\Contracts;
+<?php namespace BTWay\Payments\Services\Contracts;
 
 
 trait CanRefund {

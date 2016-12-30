@@ -1,8 +1,8 @@
-<?php namespace Beansme\Payments\Repositories;
+<?php namespace BTWay\Payments\Repositories;
 
-use Beansme\Payments\Models\Payment;
-use Beansme\Payments\Models\Receipt;
-use Beansme\Payments\Services\Gateways\GatewayAbstract;
+use BTWay\Payments\Models\Payment;
+use BTWay\Payments\Models\Receipt;
+use BTWay\Payments\Services\Gateways\GatewayAbstract;
 
 interface PaymentRepoContract {
 

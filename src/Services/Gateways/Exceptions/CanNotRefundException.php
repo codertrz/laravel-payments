@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments\Services\Gateways\Exceptions;
+<?php namespace BTWay\Payments\Services\Gateways\Exceptions;
 class CanNotRefundException extends \Exception{
 
 }

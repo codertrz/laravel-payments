@@ -3,7 +3,7 @@
 $route_attribute = array_merge(
     [
         'prefix' => 'api/gateway/payments',
-        'namespace' => 'Beansme\Payments\Http\Controllers',
+        'namespace' => 'BTWay\Payments\Http\Controllers',
     ],
     config('payments.routeAttributes', []));
 

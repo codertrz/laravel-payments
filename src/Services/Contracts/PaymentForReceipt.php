@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Services\Contracts;
+<?php namespace BTWay\Payments\Services\Contracts;
 
-use Beansme\Payments\Models\Receipt;
+use BTWay\Payments\Models\Receipt;
 
 trait PaymentForReceipt {
 

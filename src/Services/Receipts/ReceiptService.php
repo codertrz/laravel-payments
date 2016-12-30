@@ -1,12 +1,12 @@
-<?php namespace Beansme\Payments\Services\Receipts;
+<?php namespace BTWay\Payments\Services\Receipts;
 
-use Beansme\Payments\Models\Payment;
+use BTWay\Payments\Models\Payment;
 use Pingpp\Charge;
-use Beansme\Payments\Models\Receipt;
-use Beansme\Payments\Protocol;
-use Beansme\Payments\Services\Gateways\Exceptions\CanNotRefundException;
-use Beansme\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
-use Beansme\Payments\Services\Gateways\GatewayAbstract;
+use BTWay\Payments\Models\Receipt;
+use BTWay\Payments\Protocol;
+use BTWay\Payments\Services\Gateways\Exceptions\CanNotRefundException;
+use BTWay\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
+use BTWay\Payments\Services\Gateways\GatewayAbstract;
 use Illuminate\Database\Eloquent\Model;
 
 class ReceiptService implements ReceiptServiceContract {

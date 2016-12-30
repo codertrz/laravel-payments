@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Events\Payments;
+<?php namespace BTWay\Payments\Events\Payments;
 
-use Beansme\Payments\Models\Payment;
+use BTWay\Payments\Models\Payment;
 use Illuminate\Queue\SerializesModels;
 
 class PaymentPaid {

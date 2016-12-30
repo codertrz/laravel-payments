@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Test;
+<?php namespace BTWay\Payments\Test;
 
-use Beansme\Payments\Providers\PaymentServiceProvider;
+use BTWay\Payments\Providers\PaymentServiceProvider;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 

@@ -5,7 +5,7 @@ return [
     'default' => env('PAY_GATEWAY', 'pingxx'),
 
     'helper_functions' => [
-        'get_user_openid' => '\Beansme\Payments\Protocol::getUserOpenId', // Class::staticFunction | [Class, function]
+        'get_user_openid' => '\BTWay\Payments\Protocol::getUserOpenId', // Class::staticFunction | [Class, function]
     ],
     /*
     |--------------------------------------------------------------------------
@@ -47,8 +47,8 @@ return [
             ],
 
             //system setting
-            'payment_type' => '\Beansme\Payments\Models\Payment',
-            'refund_payment_type' => '\Beansme\Payments\Models\RefundPayment',
+            'payment_type' => '\BTWay\Payments\Models\Payment',
+            'refund_payment_type' => '\BTWay\Payments\Models\RefundPayment',
         ],
         'credits' => [],
         'wallet' => []

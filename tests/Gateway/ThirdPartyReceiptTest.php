@@ -1,11 +1,11 @@
-<?php namespace Beansme\Payments\Test\Gateway;
+<?php namespace BTWay\Payments\Test\Gateway;
 
-use Beansme\Payments\Models\Payment;
-use Beansme\Payments\Models\Receipt;
-use Beansme\Payments\Protocol;
-use Beansme\Payments\Services\Gateways\PingxxGateway;
-use Beansme\Payments\Services\Receipts\ReceiptService;
-use Beansme\Payments\Test\TestCase;
+use BTWay\Payments\Models\Payment;
+use BTWay\Payments\Models\Receipt;
+use BTWay\Payments\Protocol;
+use BTWay\Payments\Services\Gateways\PingxxGateway;
+use BTWay\Payments\Services\Receipts\ReceiptService;
+use BTWay\Payments\Test\TestCase;
 use Pingpp\Charge;
 
 class ThirdPartyReceiptTest extends TestCase {

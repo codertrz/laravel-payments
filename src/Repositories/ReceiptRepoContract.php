@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Repositories;
+<?php namespace BTWay\Payments\Repositories;
 
-use Beansme\Payments\Models\Receipt;
+use BTWay\Payments\Models\Receipt;
 
 interface ReceiptRepoContract {
 

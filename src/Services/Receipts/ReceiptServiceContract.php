@@ -1,4 +1,4 @@
-<?php namespace Beansme\Payments\Services\Receipts;
+<?php namespace BTWay\Payments\Services\Receipts;
 
 use Pingpp\Charge;
 

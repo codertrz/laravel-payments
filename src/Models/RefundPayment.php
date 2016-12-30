@@ -1,8 +1,8 @@
-<?php namespace Beansme\Payments\Models;
+<?php namespace BTWay\Payments\Models;
 
-use Beansme\Payments\Events\Payments\PaymentRefundSucceed;
-use Beansme\Payments\Events\Payments\PaymentRefundFailed;
-use Beansme\Payments\Protocol;
+use BTWay\Payments\Events\Payments\PaymentRefundSucceed;
+use BTWay\Payments\Events\Payments\PaymentRefundFailed;
+use BTWay\Payments\Protocol;
 use Illuminate\Database\Eloquent\Model;
 
 class RefundPayment extends Model {

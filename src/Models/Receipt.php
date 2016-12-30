@@ -1,8 +1,8 @@
-<?php namespace Beansme\Payments\Models;
+<?php namespace BTWay\Payments\Models;
 
-use Beansme\Payments\Events\Receipts\ReceiptPaid;
-use Beansme\Payments\Protocol;
-use Beansme\Payments\Services\Contracts\PaymentForReceipt;
+use BTWay\Payments\Events\Receipts\ReceiptPaid;
+use BTWay\Payments\Protocol;
+use BTWay\Payments\Services\Contracts\PaymentForReceipt;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 

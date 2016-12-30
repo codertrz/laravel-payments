@@ -1,6 +1,6 @@
-<?php namespace Beansme\Payments\Http\Controllers;
+<?php namespace BTWay\Payments\Http\Controllers;
 
-use Beansme\Payments\Services\Gateways\PingxxGateway;
+use BTWay\Payments\Services\Gateways\PingxxGateway;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
