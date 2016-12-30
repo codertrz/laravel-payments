@@ -1,16 +1,15 @@
 language: php
-
 services:
-  - mysql
-
+- mysql
 php:
-  - 5.6
-
+- 5.6
 before_script:
-  - cp .env.travis .env
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
-  - composer self-update
-  - composer install --no-interaction
-
+- cp .env.travis .env
+- mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
+- composer self-update
+- composer install --no-interaction
 script:
-  - composer test
+- composer test
+notifications:
+  slack:
+    secure: FCVpD9C7SmBqwvrjxTSqa6rWqBTmnOrzCDoFhW2DQfE5+sZOjzMiy33naQR545VPebSLHn/UhYse7dmUJUF43Uy+7iRG1OrEcn8ZeYhseXy/zJp74HPsTyXwxxzqSga1uRPZ1PivFVnZfK32eBkNQb7z+uQC5U7Fyi0HTgAMltE01jnYPl0CznDwJt0QVG0RYIrBn4jsc4b+nv8NoiXJn7ZyT9UkQtK8HqDIwSxKtFjlEEloFB3ix2ZArArTCe9jD6kxFJMuD0ajmnDEvvD0mkiGBv0a1csnDQyvQCsURDap5iELBgK3e+6ReSIeZvUNUiFw8gdfZGaephO0216V0DOvTw+iFA4x9qXL+2zGz5C52oJ0UVwBbg5c90ZPLV3d6ROZBaFWYOrWrjsXuMp0q628rZqnio+Ppl6QNtOMpSnI/BKtOW1RYaGs2jrXMLrj6PrS224+ACnegP1cqPnMqVSL8FI5GuZbV2yO9KYOx5SuSN6GuSOov9FKxwsPPvXz6k1GtX87ok+BDSvlTy3JVgSM7WF81rD3OfvRedzUd/1eie8c43HwJcWOtXRKszUe5hMUzHNAd7dDioTqSI/ZT2qrt+DcwB91ktEMuY5HUFbEYxFzgUeJd4GTWpABMs4UwIGK5pvj2T9mbyqUdN8NWVhCdqupBkqDFKBRburRfLQ=
