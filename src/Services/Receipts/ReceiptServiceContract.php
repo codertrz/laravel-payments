@@ -21,6 +21,8 @@ interface ReceiptServiceContract {
      */
     public function isPaid($receipt_id);
 
+    public function refund($order_no, $amount, $desc);
+
     public function applyRefund($receipt, $amount, $desc);
 
     public function approveRefund($refund_receipt);

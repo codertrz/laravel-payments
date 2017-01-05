@@ -22,7 +22,7 @@ class CreateRefundReceiptsTable extends Migration {
             $table->unsignedBigInteger('order_no');
             $table->unsignedBigInteger('user_id');
             $table->string('desc', 256);
-            $table->string('memo', 256);
+            $table->string('memo', 256)->nullable();
 
             //gateway
             $table->string('paid_payment_id'); // 成功支付id

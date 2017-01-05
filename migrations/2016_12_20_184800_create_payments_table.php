@@ -16,6 +16,7 @@ class CreatePaymentsTable extends Migration {
 
             //流水号
             $table->string('id');
+            $table->unsignedBigInteger('payment_no');
             $table->unsignedBigInteger('order_no');
             $table->string('transaction_no')->nullable();
 

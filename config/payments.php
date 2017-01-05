@@ -4,6 +4,8 @@ return [
 
     'default' => env('PAY_GATEWAY', 'pingxx'),
 
+    'refund_audit' => env('PAY_GATEWAY_REFUND_AUDIT', false),
+
     'helper_functions' => [
         'get_user_openid' => '\BTWay\Payments\Protocol::getUserOpenId', // Class::staticFunction | [Class, function]
     ],

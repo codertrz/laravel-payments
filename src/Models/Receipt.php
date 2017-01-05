@@ -37,7 +37,7 @@ class Receipt extends Model {
 
     public function refunds()
     {
-        return $this->hasMany(RefundReceipt::class, 'id', 'receipt_id');
+        return $this->hasMany(RefundReceipt::class, 'receipt_id', 'id');
     }
 
     protected function getPaymentKeyName()
@@ -122,7 +122,7 @@ class Receipt extends Model {
         $request_amount = is_null($request_amount)
             ? $this->getCanRefundAmount()
             : intval($request_amount);
-        return $request_amount >= $this->getCanRefundAmount();
+        return $this->isPaid() && ($request_amount <= $this->getCanRefundAmount());
     }
 
     public function getCanRefundAmount()
@@ -161,7 +161,7 @@ class Receipt extends Model {
     {
         $this->attributes['amount_refunded'] = $this->attributes['amount_refunded'] + $refund->getAmount();
 
-        if ($this->getCanRefundAmount() <= 0 && $this->refunds()->where('status', Protocol::STATUS_INVOICE_SUCCEED)->sum('amount') == $this->attributes['amount_refunded']) {
+        if ($this->getCanRefundAmount() <= 0 && $this->refunds()->where('status', Protocol::STATUS_REFUND_REFUNDED)->sum('amount') == $this->attributes['amount_refunded']) {
             $this->attributes['refund_status'] = Protocol::STATUS_REFUND_DONE;
         }
 

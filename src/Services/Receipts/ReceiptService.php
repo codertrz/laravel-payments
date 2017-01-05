@@ -72,9 +72,30 @@ class ReceiptService implements ReceiptServiceContract {
         });
     }
 
-    public function applyRefund($receipt, $amount, $desc)
+    public function refund($order_no, $amount, $desc)
     {
-        $receipt = $this->receiptRepo->fetchReceipt($receipt, $by_order = false);
+        $refund_receipt = $this->applyRefund($order_no, $amount, $desc, $by_order = true);
+
+        if (!$this->refundNeedAudit()) {
+            return $this->approveRefund($refund_receipt);
+        }
+
+        return $refund_receipt;
+    }
+
+    protected function refundNeedAudit()
+    {
+        return config('payments.refund_audit', false);
+    }
+
+    public function applyRefund($receipt, $amount, $desc, $by_order = false)
+    {
+        $receipt = $this->receiptRepo->fetchReceipt($receipt, $by_order);
+
+        if (!$this->isPaid($receipt)) {
+            throw new ChargeNotPayException();
+        }
+
         $amount = $amount ?: $receipt->getCanRefundAmount();
 
         if (!$receipt->canRefund($amount)) {
@@ -82,6 +103,15 @@ class ReceiptService implements ReceiptServiceContract {
         }
 
         $refund_receipt = $receipt->setApplyRefund($amount, $desc);
+
+        return $refund_receipt;
+    }
+
+    public function rejectRefund($refund_receipt, $memo)
+    {
+        $refund_receipt = $this->receiptRepo->fetchRefundReceipt($refund_receipt);
+
+        $refund_receipt->setAsReject($memo);
 
         return $refund_receipt;
     }
@@ -95,7 +125,18 @@ class ReceiptService implements ReceiptServiceContract {
         }
 
         $refund_charge = $this->gateway->refund($refund_receipt);
-        return $refund_charge;
+
+        return $refund_receipt;
+    }
+
+    public function checkRefundSucceed($refund_receipt)
+    {
+        $refund_receipt = $this->receiptRepo->fetchRefundReceipt($refund_receipt);
+
+        return $refund_receipt->isSucceed() ?: call_user_func(function () use ($refund_receipt) {
+            $succeed = $this->gateway->transactionIsRefunded($refund_receipt->getRefundPaymentId());
+            return $succeed;
+        });
     }
 
     /**

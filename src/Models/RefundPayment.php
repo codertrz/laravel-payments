@@ -46,6 +46,7 @@ class RefundPayment extends Model {
         if (!$this->isSucceed()) {
             $this->setAttribute('transaction_no', $transaction_no);
             $this->setAttribute('time_succeed', $time_succeed);
+            $this->setAttribute('succeed', true);
             $this->setAttribute('status', Protocol::STATUS_REFUND_REFUNDED);
             $this->save();
         }

@@ -93,6 +93,10 @@ class ThirdPartyReceiptTest extends TestCase {
         $this->assertTrue($charge_paid);
 
         $this->checkPaid($payment_id);
+
+        $receipt = Receipt::query()->where('payment_id', $payment_id)->firstOrFail();
+
+        return $receipt;
     }
 
     /** @test */
@@ -114,16 +118,15 @@ class ThirdPartyReceiptTest extends TestCase {
             ]
         ];
 
-        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/paid', $event);
+        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/notify', $event);
         $this->assertResponseStatus(403);
+
         $event['livemode'] = false;
-
-
-        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/paid', $event);
+        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/notify', $event);
         $this->assertResponseStatus(422);
-        $event['type'] = PingxxGateway::PINGXX_EVENT_PAID_SUCCEED;
 
-        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/paid', $event);
+        $event['type'] = PingxxGateway::PINGXX_EVENT_PAID_SUCCEED;
+        $this->json('post', config('payments.routeAttributes.prefix') . '/pingxx/notify', $event);
         $this->assertResponseOk();
 
         $this->checkPaid($payment_id);

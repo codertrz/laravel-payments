@@ -43,10 +43,8 @@ class PingxxNotifyController extends Controller {
 
     protected function eventStartLog($event)
     {
-        \Log::info('Pingxx Event Start !');
-        \Log::info('Pingxx Event id: ' . $event['id']);
-        \Log::info('Pingxx Event mode: ' . ($event['livemode'] ? 'production' : 'test'));
-        \Log::info('Pingxx Event type: ' . $event['type']);
+        \Log::info('Pingxx Event Start {' . $event['id'] . '} =====================================');
+        \Log::info('Pingxx Event info: ' . json_encode($event));
     }
 
     public function handle(Request $request)
@@ -54,10 +52,10 @@ class PingxxNotifyController extends Controller {
         try {
             $event = $this->authEvent();
             $succeed = $this->gateway->handleNotify($event);
-            if ($succeed) {
-                \Log::info('Pingxx Event Event ' . $event['id'] . ' Succeed !');
 
-                http_response_code(200); // PHP 5.4 or greater
+            if ($succeed) {
+                \Log::info('Pingxx Event Succeed {' . $event['id'] . '} =====================================');
+                return new JsonResponse(['message' => 'succeed'], 200);
             }
         } catch (\Exception $e) {
             \Log::error($e);

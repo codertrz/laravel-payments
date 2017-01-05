@@ -48,7 +48,6 @@ class Protocol {
         return mt_rand(1, 9) . substr(date('Y'), -2) . date('md') . substr(time(), -5) . substr(microtime(), 2, 5) . sprintf('%02d', mt_rand(0, 99));
     }
 
-
     public static function getUserOpenId($user_id)
     {
         return $user_id;

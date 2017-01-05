@@ -62,17 +62,10 @@ class EloquentReceiptRepo implements ReceiptRepoContract {
         ]);
     }
 
-    public function fetchPaidPayment($receipt)
-    {
-        $receipt = $this->fetchReceipt($receipt, $by_order = false);
-
-        return $receipt->payment;
-    }
-
     public function fetchRefundReceipt($refund_id = null, $receipt_id = null)
     {
         if ($refund_id instanceof RefundReceipt) {
-            return $receipt_id;
+            return $refund_id;
         }
 
         if ($refund_id) {

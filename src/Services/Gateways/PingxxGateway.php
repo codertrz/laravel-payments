@@ -115,6 +115,7 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
             [
                 'id' => $charge['id'],
                 'order_no' => $receipt->getOrderNo(),
+                'payment_no' => $charge['order_no'],
                 'transaction_no' => $charge['transaction_no'],
                 'receipt_id' => $receipt->getKey(),
                 'user_id' => $receipt['user_id'],
@@ -316,26 +317,40 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
             return $refund_charge;
         } catch (Base $e) {
             $refund->setAsFail($e->getJsonBody());
+
+            throw $e;
         }
     }
 
-
     /**
-     * @param CanRefund $payment
-     * @param bool $local
      * @param null $refund_id
-     * @return Refund|Model
+     * @param null $payment_id
+     * @param bool $local
+     * @return mixed|RefundPayment|Refund
+     * @throws \Exception
      */
-    public function fetchRefundTransaction(CanRefund $payment, $local = false, $refund_id = null)
+    public function fetchRefundTransaction($refund_id = null, $payment_id = null, $local = false)
     {
-        if ($local) {
-            if ($refund_id) {
-                return $this->getRefundPayment($refund_id);
-            }
-            return $payment->getRefunds();
+        if (is_null($refund_id) && is_null($payment_id)) {
+            throw new \Exception('wrong query refund transaction params', 422);
         }
 
-        $charge = $this->fetchTransaction($payment->getRefundNoKey(), false);
+        $local_payment = function () use ($refund_id, $payment_id) {
+            if ($refund_id) {
+                return RefundPayment::query()->findOrFail($refund_id);
+            }
+            return RefundPayment::query()->where('payment_id', $payment_id)->get();
+        };
+
+        if ($local) {
+            return $local_payment();
+        }
+
+        if (is_null($payment_id)) {
+            $payment_id = $local_payment()['payment_id'];
+        }
+
+        $charge = $this->fetchTransaction($payment_id, false);
         if (!is_null($refund_id)) {
             if ($refund_id instanceof Refund) {
                 return $refund_id;
@@ -370,7 +385,7 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
 
     public function finishRefund($refund_charge)
     {
-        $refund_payment = $this->getRefundPayment($refund_charge['id']);
+        $refund_payment = $this->fetchRefundTransaction($refund_charge['id'], null, $local = true);
 
         if ($refund_charge['succeed']) {
             $refund_payment->setAsSucceed($refund_charge['transaction_no'], $refund_charge['time_succeed']);
@@ -382,13 +397,17 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
         return false;
     }
 
-    /**
-     * @param $refund_id
-     * @return RefundPayment|Model
-     */
-    protected function getRefundPayment($refund_id)
+    public function transactionIsRefunded($refund_charge_id)
     {
-        return RefundPayment::query()->findOrFail($refund_id);
+        $refund_payment = $this->fetchRefundTransaction($refund_charge_id, null, $local = true);
+
+        return $refund_payment->isSucceed() ?: call_user_func(function () use ($refund_charge_id) {
+            $refund_charge = $this->fetchRefundTransaction($refund_charge_id, null, $local = false);
+            if ($refund_succeed = $refund_charge['succeed']) {
+                $this->finishRefund($refund_charge);
+            }
+            return $refund_succeed;
+        });
     }
 
     /**
@@ -404,7 +423,6 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
     const PINGXX_EVENT_RED_RECEIVED = 'red_envelope.received'; //红包对象，红包接收成功时触发。
     const PINGXX_EVENT_BATCH_TRANSFER_SUCCEED = 'batch_transfer.succeeded'; //批量企业付款对象，批量企业付款成功时触发。
 
-
     /**
      * Transfer
      */
@@ -413,7 +431,6 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
     {
         // TODO: Implement transfer() method.
     }
-
 
     public function handleNotify($event)
     {
@@ -424,7 +441,7 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
             case self::PINGXX_EVENT_REFUND_SUCCEED:
                 return $this->finishRefund($charge);
             default:
-                throw new \Exception('event type not exist');
+                throw new \Exception('event type not exist', 422);
         }
     }
 

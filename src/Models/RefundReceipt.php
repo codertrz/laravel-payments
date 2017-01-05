@@ -9,6 +9,8 @@ class RefundReceipt extends Model {
 
     protected $guarded = [];
 
+    public $incrementing = false;
+
     public function refund()
     {
         return $this->hasOne(RefundPayment::class, 'id', 'refund_payment_id');
@@ -30,6 +32,11 @@ class RefundReceipt extends Model {
             Protocol::STATUS_REFUND_FAIL,
             Protocol::STATUS_REFUND_APPLY,
         ]);
+    }
+
+    public function isSucceed()
+    {
+        return $this->attributes['status'] == Protocol::STATUS_REFUND_REFUNDED;
     }
 
     public function getRefundPaymentId()
@@ -80,12 +87,12 @@ class RefundReceipt extends Model {
 
     public function setAsSucceed()
     {
-        $this->setAttribute('status', Protocol::STATUS_INVOICE_SUCCEED);
-
-        $receipt = $this->receipt;
-        $receipt->setAsRefunded($this);
-
-        $this->save();
+        if (!$this->isSucceed()) {
+            $this->setAttribute('status', Protocol::STATUS_REFUND_REFUNDED);
+            $this->save();
+            $receipt = $this->receipt;
+            $receipt->setAsRefunded($this);
+        }
     }
 
 }

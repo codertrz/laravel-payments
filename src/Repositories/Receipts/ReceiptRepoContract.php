@@ -30,12 +30,10 @@ interface ReceiptRepoContract {
      */
     public function initReceipt($user_id, $order_no, $amount, $subject, $body);
 
-    public function fetchPaidPayment($receipt);
-
     /**
      * @param null $refund_id
      * @param null $receipt_id
-     * @return RefundReceipt|mixed
+     * @return RefundReceipt
      */
     public function fetchRefundReceipt($refund_id = null, $receipt_id = null);
 

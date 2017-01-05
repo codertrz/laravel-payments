@@ -80,8 +80,10 @@ abstract class GatewayAbstract {
 
     public abstract function refund(RefundReceipt $refund);
 
-    public abstract function fetchRefundTransaction(CanRefund $payment, $local = false, $refund_id = null);
+    public abstract function fetchRefundTransaction($refund_id = null, $payment_id = null, $local = false);
 
     public abstract function finishRefund($refund_charge);
+
+    public abstract function transactionIsRefunded($refund_charge_id);
 
 }
