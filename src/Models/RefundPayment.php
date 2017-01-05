@@ -64,7 +64,7 @@ class RefundPayment extends Model {
         $this->save();
 
         $receipt = $this->receipt;
-        $receipt->setAsFail();
+        $receipt->setAsFail($failure_code);
 
         event(new PaymentRefundFailed($this));
     }

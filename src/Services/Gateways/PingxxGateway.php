@@ -10,6 +10,7 @@ use BTWay\Payments\Services\Contracts\CanRefund;
 use BTWay\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
 use Illuminate\Database\Eloquent\Model;
 use Pingpp\Charge;
+use Pingpp\Error\Base;
 use Pingpp\Pingpp;
 use Pingpp\Refund;
 
@@ -297,21 +298,25 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
     {
         $charge = $this->fetchTransaction($refund->getPaidPaymentId(), $local = false);
 
-        $refund_charge = $charge->refunds->create([
-            'amount' => $refund->getAmount(),
-            'description' => $refund->getDesc(),
-        ]);
+        try {
+            $refund_charge = $charge->refunds->create([
+                'amount' => $refund->getAmount(),
+                'description' => $refund->getDesc(),
+            ]);
 
-        $refund_payment = $this->persistRefund($refund_charge);
+            $refund_payment = $this->persistRefund($refund_charge);
 
-        //request success
-        if (!$refund_charge['failure_code']) {
-            $refund->setAsApprove($refund_payment->getKey());
+            //request success
+            if (!$refund_charge['failure_code']) {
+                $refund->setAsApprove($refund_payment->getKey());
+            }
+
+            event(new PaymentRefundApply($refund_payment));
+
+            return $refund_charge;
+        } catch (Base $e) {
+            $refund->setAsFail($e->getJsonBody());
         }
-
-        event(new PaymentRefundApply($refund_payment));
-
-        return $refund_charge;
     }
 
 
@@ -409,4 +414,20 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
         // TODO: Implement transfer() method.
     }
 
+
+    public function handleNotify($event)
+    {
+        $charge = $event['data']['object'];
+        switch ($event['type']) {
+            case self::PINGXX_EVENT_PAID_SUCCEED:
+                return $this->finishPurchase($charge);
+            case self::PINGXX_EVENT_REFUND_SUCCEED:
+                return $this->finishRefund($charge);
+            default:
+                throw new \Exception('event type not exist');
+        }
+    }
+
 }
+
+

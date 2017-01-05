@@ -10,6 +10,6 @@ $route_attribute = array_merge(
 
 Route::group($route_attribute, function () {
     Route::group(['prefix' => 'pingxx', 'middleware' => 'payments.auth.pingxx'], function () {
-        Route::post('paid', 'PingxxNotifyController@paid');
+        Route::post('notify', 'PingxxNotifyController@handle');
     });
 });

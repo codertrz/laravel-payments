@@ -64,9 +64,10 @@ class RefundReceipt extends Model {
         $this->save();
     }
 
-    public function setAsFail()
+    public function setAsFail($failure_code = null)
     {
         $this->setAttribute('status', Protocol::STATUS_REFUND_FAIL);
+        $this->setAttribute('failure_code', $failure_code);
         $this->save();
     }
 

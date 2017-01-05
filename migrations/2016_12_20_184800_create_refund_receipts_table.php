@@ -34,6 +34,7 @@ class CreateRefundReceiptsTable extends Migration {
 
             //状态
             $table->string('status', 32)->default('apply');
+            $table->string('failure_code', 128)->nullable();
 
             $table->softDeletes();
             $table->timestamps();
