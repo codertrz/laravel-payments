@@ -21,14 +21,9 @@ interface ReceiptServiceContract {
      */
     public function isPaid($receipt_id);
 
-    /**
-     * @param $receipt_id
-     * @param int $amount
-     * @param string $desc
-     * @return mixed
-     */
-    public function refund($receipt_id, $amount, $desc);
+    public function applyRefund($receipt, $amount, $desc);
 
+    public function approveRefund($refund_receipt);
 
     public function gateway();
 

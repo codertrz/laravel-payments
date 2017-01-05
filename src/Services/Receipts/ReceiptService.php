@@ -86,13 +86,6 @@ class ReceiptService implements ReceiptServiceContract {
         return $refund_receipt;
     }
 
-    /**
-     * @param $receipt
-     * @param int $amount
-     * @param string $desc
-     * @return mixed
-     * @throws CanNotRefundException
-     */
     public function approveRefund($refund_receipt)
     {
         $refund_receipt = $this->receiptRepo->fetchRefundReceipt($refund_receipt);

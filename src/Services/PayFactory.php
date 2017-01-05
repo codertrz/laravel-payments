@@ -1,6 +1,7 @@
 <?php namespace BTWay\Payments\Services;
 
 use BTWay\Payments\Protocol;
+use BTWay\Payments\Repositories\Receipts\EloquentReceiptRepo;
 use BTWay\Payments\Services\Gateways\PingxxGateway;
 use BTWay\Payments\Services\Receipts\ReceiptService;
 use BTWay\Payments\Services\Receipts\ReceiptServiceContract;
@@ -38,7 +39,7 @@ class PayFactory {
     protected function initConfig()
     {
         $this->gateways[Protocol::PAY_GATEWAY_OF_PINGXX] = function () {
-            return new ReceiptService(new PingxxGateway());
+            return new ReceiptService(new PingxxGateway(), new EloquentReceiptRepo);
         };
     }
 

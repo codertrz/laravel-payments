@@ -129,6 +129,7 @@ class PaymentServiceProvider extends ServiceProvider {
 
         $this->registerCommands();
 
+        $this->registerBinding();
     }
 
     /**

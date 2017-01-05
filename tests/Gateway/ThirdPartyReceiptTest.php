@@ -3,6 +3,7 @@
 use BTWay\Payments\Models\Payment;
 use BTWay\Payments\Models\Receipt;
 use BTWay\Payments\Protocol;
+use BTWay\Payments\Repositories\Receipts\ReceiptRepoContract;
 use BTWay\Payments\Services\Gateways\PingxxGateway;
 use BTWay\Payments\Services\Receipts\ReceiptService;
 use BTWay\Payments\Test\TestCase;
@@ -40,8 +41,9 @@ class ThirdPartyReceiptTest extends TestCase {
     public function it_can_accept_purchase_request_and_create_a_receipt_record()
     {
         $this->assertTrue($this->pay->gateway() instanceof PingxxGateway);
-
-        $receipt = $this->pay->initReceipt($this->user_id, $this->order_no, $this->amount, $this->subject, $this->body);
+        $receiptRepo = $this->app->make(ReceiptRepoContract::class);
+        $receiptRepo->setPaymentType($this->pay->gateway()->getPaymentType());
+        $receipt = $receiptRepo->initReceipt($this->user_id, $this->order_no, $this->amount, $this->subject, $this->body);
         $this->assertTrue($receipt instanceof Receipt);
         $this->assertEquals($receipt['amount'], $this->amount);
         $this->assertEquals($receipt['order_no'], $this->order_no);
