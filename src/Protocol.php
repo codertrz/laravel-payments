@@ -4,6 +4,8 @@ use BTWay\Payments\Models\Payment;
 
 class Protocol {
 
+    const PER_PAGE = 20;
+
     //支付用户信息标识
     const PAYER_ID_USER_ID = 'system';
     const PAYER_ID_OPEN_ID = 'openid';
@@ -16,7 +18,11 @@ class Protocol {
 
     //退款状态
     const STATUS_REFUND_NONE = 'none';
+    const STATUS_REFUND_EXIST = 'process';
+    const STATUS_REFUND_DONE = 'done';
+
     const STATUS_REFUND_APPLY = 'apply';
+    const STATUS_REFUND_REJECT = 'reject';
     const STATUS_REFUND_REFUNDING = 'pending';
     const STATUS_REFUND_REFUNDED = 'succeeded';
     const STATUS_REFUND_FAIL = 'fail';
@@ -41,7 +47,6 @@ class Protocol {
     {
         return mt_rand(1, 9) . substr(date('Y'), -2) . date('md') . substr(time(), -5) . substr(microtime(), 2, 5) . sprintf('%02d', mt_rand(0, 99));
     }
-
 
 
     public static function getUserOpenId($user_id)

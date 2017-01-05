@@ -2,6 +2,4 @@
 
 interface GatewayNotifyHandler {
 
-    public function handle($event);
-
 }

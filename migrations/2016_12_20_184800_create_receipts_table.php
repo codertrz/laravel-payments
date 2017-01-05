@@ -33,6 +33,7 @@ class CreateReceiptsTable extends Migration {
             //金额
             $table->string('currency', 32)->default('cny');
             $table->unsignedInteger('amount');
+            $table->unsignedInteger('amount_refundable');
             $table->unsignedInteger('amount_refunded')->default(0);
 
             //时间

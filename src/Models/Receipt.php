@@ -35,6 +35,11 @@ class Receipt extends Model {
         return $this->morphTo();
     }
 
+    public function refunds()
+    {
+        return $this->hasMany(RefundReceipt::class, 'id', 'receipt_id');
+    }
+
     protected function getPaymentKeyName()
     {
         return 'payment_id';
@@ -89,21 +94,6 @@ class Receipt extends Model {
         return $this->getAttributeValue('pay_status') == Protocol::STATUS_PAY_PAID;
     }
 
-    /**
-     * 是否可以发起退款
-     * @return bool
-     */
-    public function canRefund()
-    {
-        return $this->getAttributeValue('amount_refunded') < $this->getAttributeValue('amount');
-    }
-
-    public function hasRefund()
-    {
-        return $this->getAttributeValue('refund_status') != Protocol::STATUS_REFUND_NONE;
-    }
-
-    //操作
     public function setAsPaid($payment)
     {
         if (!$this->isPaid()) {
@@ -119,6 +109,63 @@ class Receipt extends Model {
         }
 
         event(new ReceiptPaid($this));
+    }
+
+
+    /**
+     * 是否可以发起退款
+     * @param int|null $request_amount
+     * @return bool
+     */
+    public function canRefund($request_amount = null)
+    {
+        $request_amount = is_null($request_amount)
+            ? $this->getCanRefundAmount()
+            : intval($request_amount);
+        return $request_amount >= $this->getCanRefundAmount();
+    }
+
+    public function getCanRefundAmount()
+    {
+        return $this->getAttributeValue('amount_refundable');
+    }
+
+    public function setApplyRefund($amount, $desc)
+    {
+        $refund_receipt = $this->refunds()->create([
+            'id' => Protocol::generateId(),
+            'amount' => $amount,
+            'order_no' => $this->getOrderNo(),
+            'user_id' => $this->getAttributeValue('user_id'),
+            'desc' => $desc,
+            'paid_payment_id' => $this->getPaymentId(),
+            'status' => Protocol::STATUS_REFUND_APPLY,
+        ]);
+
+        $this->attributes['amount_refundable'] = $this->attributes['amount_refundable'] - $amount;
+        $this->setAttribute('refund_status', Protocol::STATUS_REFUND_EXIST);
+
+        $this->save();
+
+        return $refund_receipt;
+    }
+
+    public function setRejectRefund(RefundReceipt $refund)
+    {
+        $this->attributes['amount_refundable'] = $this->attributes['amount_refundable'] + $refund->getAmount();
+        $this->save();
+    }
+
+
+    public function setAsRefunded(RefundReceipt $refund)
+    {
+        $this->attributes['amount_refunded'] = $this->attributes['amount_refunded'] + $refund->getAmount();
+
+        if ($this->getCanRefundAmount() <= 0 && $this->refunds()->where('status', Protocol::STATUS_INVOICE_SUCCEED)->sum('amount') == $this->attributes['amount_refunded']) {
+            $this->attributes['refund_status'] = Protocol::STATUS_REFUND_DONE;
+        }
+
+        $this->save();
     }
 
 

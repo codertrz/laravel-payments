@@ -1,6 +1,7 @@
 <?php namespace BTWay\Payments\Services\Receipts;
 
 use BTWay\Payments\Models\Payment;
+use BTWay\Payments\Repositories\Receipts\ReceiptRepoContract;
 use Pingpp\Charge;
 use BTWay\Payments\Models\Receipt;
 use BTWay\Payments\Protocol;
@@ -14,57 +15,25 @@ class ReceiptService implements ReceiptServiceContract {
     /**
      * @var GatewayAbstract
      */
-    private $gateway;
+    protected $gateway;
+
+    /**
+     * @var ReceiptRepoContract
+     */
+    protected $receiptRepo;
 
     /**
      * ReceiptServiceAbstract constructor.
      * @param GatewayAbstract $gateway
+     * @param ReceiptRepoContract $receiptRepo
      */
-    public function __construct(GatewayAbstract $gateway)
+    public function __construct(GatewayAbstract $gateway, ReceiptRepoContract $receiptRepo)
     {
         $this->gateway = $gateway;
+        $this->receiptRepo = $receiptRepo;
+        $this->receiptRepo->setPaymentType($this->gateway->getPaymentType());
     }
 
-
-    /**
-     * get or create order_no receipt
-     * @param $order_no
-     * @param bool $by_order
-     * @return Receipt|Model
-     */
-    public function fetchReceipt($order_no, $by_order = true)
-    {
-        if ($order_no instanceof Receipt) {
-            return $order_no;
-        }
-
-        if ($by_order) {
-            return Receipt::query()->where('order_no', $order_no)->where('payment_type', $this->gateway->getPaymentType())->first();
-        }
-
-        return Receipt::query()->findOrFail($order_no);
-    }
-
-    public function initReceipt($user_id, $order_no, $amount, $subject, $body)
-    {
-        if ($exist_receipt = $this->fetchReceipt($order_no, $by_order = true)) {
-            return $exist_receipt;
-        }
-
-        return Receipt::create([
-            'id' => Protocol::generateId(),
-            'user_id' => $user_id,
-            'order_no' => $order_no,
-            'subject' => $subject,
-            'body' => $body,
-            'payment_type' => $this->gateway->getPaymentType(),
-            'amount' => $amount,
-            'amount_refunded' => 0,
-            'pay_status' => Protocol::STATUS_PAY_UNPAID,
-            'refund_status' => Protocol::STATUS_REFUND_NONE,
-            'invoice_status' => Protocol::STATUS_INVOICE_NONE
-        ]);
-    }
 
     /**
      * @param $user_id
@@ -77,7 +46,7 @@ class ReceiptService implements ReceiptServiceContract {
      */
     public function purchase($user_id, $order_no, $amount, $subject, $body, $channel = null)
     {
-        $receipt = $this->initReceipt($user_id, $order_no, $amount, $subject, $body);
+        $receipt = $this->receiptRepo->initReceipt($user_id, $order_no, $amount, $subject, $body);
 
         if ($this->isPaid($receipt)) {
             return $this->gateway->fetchTransaction($receipt->getPaymentId(), $local = false);
@@ -92,7 +61,7 @@ class ReceiptService implements ReceiptServiceContract {
      */
     public function isPaid($receipt)
     {
-        $receipt = $this->fetchReceipt($receipt, $by_order = false);
+        $receipt = $this->receiptRepo->fetchReceipt($receipt, $by_order = false);
 
         return $receipt->isPaid() ?: call_user_func(function () use ($receipt) {
             $payment = $this->gateway->receiptIsPaid($receipt->getKey());
@@ -103,6 +72,20 @@ class ReceiptService implements ReceiptServiceContract {
         });
     }
 
+    public function applyRefund($receipt, $amount, $desc)
+    {
+        $receipt = $this->receiptRepo->fetchReceipt($receipt, $by_order = false);
+        $amount = $amount ?: $receipt->getCanRefundAmount();
+
+        if (!$receipt->canRefund($amount)) {
+            throw new CanNotRefundException();
+        }
+
+        $refund_receipt = $receipt->setApplyRefund($amount, $desc);
+
+        return $refund_receipt;
+    }
+
     /**
      * @param $receipt
      * @param int $amount
@@ -110,16 +93,15 @@ class ReceiptService implements ReceiptServiceContract {
      * @return mixed
      * @throws CanNotRefundException
      */
-    public function refund($receipt, $amount, $desc)
+    public function approveRefund($refund_receipt)
     {
-        $receipt = $this->fetchReceipt($receipt, $by_order = false);
+        $refund_receipt = $this->receiptRepo->fetchRefundReceipt($refund_receipt);
 
-        if (!$receipt->canRefund()) {
-            throw new CanNotRefundException();
+        if (!$refund_receipt->canRequest()) {
+            throw new \Exception('无法重复发起退款');
         }
 
-        $refund_charge = $this->gateway->refund($receipt->payment, $desc, $amount);
-
+        $refund_charge = $this->gateway->refund($refund_receipt);
         return $refund_charge;
     }
 
@@ -130,4 +112,6 @@ class ReceiptService implements ReceiptServiceContract {
     {
         return $this->gateway;
     }
+
+
 }

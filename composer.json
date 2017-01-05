@@ -21,7 +21,6 @@
         "illuminate/filesystem": "5.*",
         "illuminate/support": "5.*",
         "illuminate/routing": "5.*",
-        "hafael/laraflake": "^1.0",
         "pingplusplus/pingpp-php": "^2.2"
     },
     "require-dev": {

@@ -25,6 +25,11 @@ class RefundPayment extends Model {
         return $this->belongsTo(Payment::class, 'payment_id', 'id');
     }
 
+    public function receipt()
+    {
+        return $this->hasOne(RefundReceipt::class, 'refund_payment_id', 'id');
+    }
+
     public function isSucceed()
     {
         return $this->getAttributeValue('succeed') ?: false;
@@ -44,6 +49,10 @@ class RefundPayment extends Model {
             $this->setAttribute('status', Protocol::STATUS_REFUND_REFUNDED);
             $this->save();
         }
+
+        $receipt = $this->receipt;
+        $receipt->setAsSucceed();
+
         event(new PaymentRefundSucceed($this));
     }
 
@@ -53,6 +62,9 @@ class RefundPayment extends Model {
         $this->setAttribute('failure_msg', $failure_msg);
         $this->setAttribute('status', Protocol::STATUS_REFUND_FAIL);
         $this->save();
+
+        $receipt = $this->receipt;
+        $receipt->setAsFail();
 
         event(new PaymentRefundFailed($this));
     }

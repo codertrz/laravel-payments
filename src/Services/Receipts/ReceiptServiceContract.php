@@ -29,6 +29,7 @@ interface ReceiptServiceContract {
      */
     public function refund($receipt_id, $amount, $desc);
 
+
     public function gateway();
 
 

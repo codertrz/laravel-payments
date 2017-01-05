@@ -2,6 +2,8 @@
 
 use BTWay\Payments\Facade;
 use BTWay\Payments\Http\Middleware\AuthorizePingxxNotify;
+use BTWay\Payments\Repositories\Receipts\EloquentReceiptRepo;
+use BTWay\Payments\Repositories\Receipts\ReceiptRepoContract;
 use BTWay\Payments\Services\PayFactory;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Routing\Router;
@@ -66,6 +68,13 @@ class PaymentServiceProvider extends ServiceProvider {
 //        $this->commands(['command.debugbar.clear']);
     }
 
+    protected function registerBinding()
+    {
+        $this->app->bind(
+            ReceiptRepoContract::class,
+            EloquentReceiptRepo::class
+        );
+    }
 
     /**
      * Load local service providers

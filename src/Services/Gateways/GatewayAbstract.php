@@ -3,6 +3,7 @@
 use BTWay\Payments\Models\Payment;
 use BTWay\Payments\Models\Receipt;
 use BTWay\Payments\Models\RefundPayment;
+use BTWay\Payments\Models\RefundReceipt;
 use BTWay\Payments\Services\Contracts\CanRefund;
 
 abstract class GatewayAbstract {
@@ -77,8 +78,7 @@ abstract class GatewayAbstract {
      */
     public abstract function persistRefund($refund_charge);
 
-
-    public abstract function refund(CanRefund $payment, $desc, $amount = null);
+    public abstract function refund(RefundReceipt $refund);
 
     public abstract function fetchRefundTransaction(CanRefund $payment, $local = false, $refund_id = null);
 

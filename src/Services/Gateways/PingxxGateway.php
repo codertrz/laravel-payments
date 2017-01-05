@@ -4,6 +4,7 @@ use BTWay\Payments\Events\Payments\PaymentRefundApply;
 use BTWay\Payments\Models\Payment;
 use BTWay\Payments\Models\Receipt;
 use BTWay\Payments\Models\RefundPayment;
+use BTWay\Payments\Models\RefundReceipt;
 use BTWay\Payments\Protocol;
 use BTWay\Payments\Services\Contracts\CanRefund;
 use BTWay\Payments\Services\Gateways\Exceptions\ChargeNotPayException;
@@ -279,15 +280,6 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
         return $extra;
     }
 
-    /**
-     * Transfer
-     */
-
-    public function transfer()
-    {
-        // TODO: Implement transfer() method.
-    }
-
 
     /**
      * Refund
@@ -295,21 +287,27 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
 
 
     /**
-     * @param CanRefund $payment
-     * @param $desc
-     * @param null $amount
+     * @param RefundReceipt $refund
      * @return Refund
+     * @internal param CanRefund $payment
+     * @internal param $desc
+     * @internal param null $amount
      */
-    public function refund(CanRefund $payment, $desc, $amount = null)
+    public function refund(RefundReceipt $refund)
     {
-        $charge = $this->fetchTransaction($payment->getRefundNoKey(), $local = false);
+        $charge = $this->fetchTransaction($refund->getPaidPaymentId(), $local = false);
 
         $refund_charge = $charge->refunds->create([
-            'amount' => $amount ?: $payment->getRefundAmount(),
-            'description' => $desc,
+            'amount' => $refund->getAmount(),
+            'description' => $refund->getDesc(),
         ]);
 
         $refund_payment = $this->persistRefund($refund_charge);
+
+        //request success
+        if (!$refund_charge['failure_code']) {
+            $refund->setAsApprove($refund_payment->getKey());
+        }
 
         event(new PaymentRefundApply($refund_payment));
 
@@ -391,7 +389,6 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
     /**
      * Event Handler
      */
-
     const PINGXX_EVENT_SUMMARY_DAILY = 'summary.daily.available'; //上一天 0 点到 23 点 59 分 59 秒的交易金额和交易量统计，在每日 02:00 点左右触发。
     const PINGXX_EVENT_SUMMARY_WEEKLY = 'summary.weekly.available'; //上周一 0 点至上周日 23 点 59 分 59 秒的交易金额和交易量统计，在每周一 02:00 点左右触发。
     const PINGXX_EVENT_SUMMARY_MONTHLY = 'summary.monthly.available'; //上月一日 0 点至上月末 23 点 59 分 59 秒的交易金额和交易量统计，在每月一日 02:00 点左右触发。
@@ -402,27 +399,14 @@ class PingxxGateway extends GatewayAbstract implements GatewayNotifyHandler {
     const PINGXX_EVENT_RED_RECEIVED = 'red_envelope.received'; //红包对象，红包接收成功时触发。
     const PINGXX_EVENT_BATCH_TRANSFER_SUCCEED = 'batch_transfer.succeeded'; //批量企业付款对象，批量企业付款成功时触发。
 
-    public function handle($event)
+
+    /**
+     * Transfer
+     */
+
+    public function transfer()
     {
-        $this->eventStartLog($event);
-
-        $event_type = $event['type'];
-        switch ($event_type) {
-            case self::PINGXX_EVENT_PAID_SUCCEED:
-                if ($this->isPaid($event['data.object'])) {
-
-                }
-        }
-
+        // TODO: Implement transfer() method.
     }
-
-    protected function eventStartLog($event)
-    {
-        \Log::info('Pingxx Event Start: ');
-        \Log::info('Pingxx Event id: ' . $event['id']);
-        \Log::info('Pingxx Event mode: ' . $event['livemode']);
-        \Log::info('Pingxx Event type: ' . $event['type']);
-    }
-
 
 }
