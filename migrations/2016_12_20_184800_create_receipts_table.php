@@ -27,6 +27,7 @@ class CreateReceiptsTable extends Migration {
             $table->string('app')->nullable();
             $table->string('channel', 32)->nullable();
             $table->string('payment_id')->nullable(); // 成功支付id
+            $table->string('payment_no')->nullable(); // 成功支付商户流水号
             $table->string('payment_type');
             $table->string('transaction_no')->nullable();
 

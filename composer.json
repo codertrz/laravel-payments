@@ -1,5 +1,5 @@
 {
-    "name": "beansme/Payments",
+    "name": "codertrz/laravel-payments",
     "description": "Laravel Payments",
     "license": "MIT",
     "keywords": [
@@ -7,7 +7,7 @@
     ],
     "authors": [
         {
-            "name": "Troy Li",
+            "name": "codertrz",
             "email": "codertroy@gmail.com"
         }
     ],

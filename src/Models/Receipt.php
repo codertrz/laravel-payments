@@ -101,6 +101,7 @@ class Receipt extends Model {
             $this->setAttribute('app', $payment->getApp());
             $this->setAttribute('channel', $payment->getChannel());
             $this->setAttribute('payment_id', $payment->getPaymentId());
+            $this->setAttribute('payment_no', $payment->getPaymentNo());
             $this->setAttribute('transaction_no', $payment->getTransactionNo());
             $this->setAttribute('currency', $payment->getCurrency());
             $this->setAttribute('time_paid', $payment->getTimePaid());

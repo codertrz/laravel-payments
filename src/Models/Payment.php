@@ -88,6 +88,11 @@ class Payment extends Model {
         return $this->getKey();
     }
 
+    public function getPaymentNo()
+    {
+        return $this->getAttributeValue('payment_no');
+    }
+
     public function getTransactionNo()
     {
         return $this->getAttributeValue('transaction_no');
